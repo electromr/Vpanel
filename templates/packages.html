@@ -3,25 +3,210 @@
 {% block title %}Packages - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Installed Packages for VPS {{ vps.vps_id }}</h4>
-    </div>
-    <div class="card-body">
-        <form method="post" class="mb-3">
-            <div class="input-group">
-                <input type="text" class="form-control" name="package" placeholder="Package name" required>
-                <button type="submit" name="action" value="install" class="btn btn-success">Install</button>
-                <button type="submit" name="action" value="remove" class="btn btn-danger">Remove</button>
-            </div>
-        </form>
-        <ul class="list-group">
-            {% for pkg in packages %}
-            <li class="list-group-item">{{ pkg }}</li>
-            {% else %}
-            <li class="list-group-item text-muted">No packages installed</li>
-            {% endfor %}
-        </ul>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .package-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-package-form {
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-package-form .input-group {
+        max-width: 600px;
+    }
+
+    .pve-package-form .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px 0 0 4px;
+        padding: 0.65rem 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-package-form .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+        color: var(--pve-text);
+    }
+
+    .pve-package-form .form-control::placeholder {
+        color: #777;
+        font-style: italic;
+    }
+
+    .pve-package-form .btn {
+        border-radius: 0;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        font-size: 0.9rem;
+        min-width: 90px;
+        transition: all 0.2s;
+    }
+
+    .pve-package-form .btn-success {
+        background-color: var(--pve-success);
+        border-color: var(--pve-success);
+        border-radius: 0 4px 4px 0;
+    }
+
+    .pve-package-form .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .pve-package-form .btn-danger {
+        background-color: var(--pve-danger);
+        border-color: var(--pve-danger);
+        border-left: none;
+        border-radius: 0 4px 4px 0;
+    }
+
+    .pve-package-form .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .pve-package-list {
+        margin: 0;
+        padding: 0;
+    }
+
+    .pve-package-list .list-group-item {
+        background-color: #2a2a2a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        padding: 0.75rem 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        word-break: break-all;
+        transition: background-color 0.2s;
+    }
+
+    .pve-package-list .list-group-item:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-package-list .list-group-item.text-muted {
+        color: #777 !important;
+        font-style: italic;
+        text-align: center;
+    }
+
+    .pve-package-list .list-group-item + .list-group-item {
+        border-top: none;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .package-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-package-form .input-group {
+            flex-direction: column;
+        }
+        .pve-package-form .form-control {
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .pve-package-form .btn {
+            border-radius: 4px;
+            width: 100%;
+            border: 1px solid;
+        }
+        .pve-package-form .btn-success,
+        .pve-package-form .btn-danger {
+            border-left: 1px solid;
+        }
+        .pve-package-form .btn + .btn {
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="package-icon">Package</div>
+            <div>Installed Packages for VPS {{ vps.vps_id }}</div>
+        </div>
+
+        <div class="pve-body">
+            <!-- Package Install/Remove Form -->
+            <form method="post" class="pve-package-form">
+                <div class="input-group">
+                    <input type="text" 
+                           class="form-control" 
+                           name="package" 
+                           placeholder="e.g., nginx, htop, python3" 
+                           required>
+                    <button type="submit" 
+                            name="action" 
+                            value="install" 
+                            class="btn btn-success">
+                        Install
+                    </button>
+                    <button type="submit" 
+                            name="action" 
+                            value="remove" 
+                            class="btn btn-danger">
+                        Remove
+                    </button>
+                </div>
+            </form>
+
+            <!-- Installed Packages List -->
+            <ul class="list-group pve-package-list">
+                {% for pkg in packages %}
+                <li class="list-group-item">{{ pkg }}</li>
+                {% else %}
+                <li class="list-group-item text-muted">No packages installed</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 </div>
 {% endblock %}
