@@ -3,47 +3,226 @@
 {% block title %}Services - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Services for VPS {{ vps.vps_id }}</h4>
-    </div>
-    <div class="card-body">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Service Info</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for serv in services %}
-                <tr>
-                    <td>{{ serv }}</td>
-                    <td>
-                        <form method="post" style="display:inline;">
-                            <input type="hidden" name="service" value="{{ serv.split()[0] }}">
-                            <input type="hidden" name="action" value="start">
-                            <button type="submit" class="btn btn-sm btn-success">Start</button>
-                        </form>
-                        <form method="post" style="display:inline;">
-                            <input type="hidden" name="service" value="{{ serv.split()[0] }}">
-                            <input type="hidden" name="action" value="stop">
-                            <button type="submit" class="btn btn-sm btn-warning">Stop</button>
-                        </form>
-                        <form method="post" style="display:inline;">
-                            <input type="hidden" name="service" value="{{ serv.split()[0] }}">
-                            <input type="hidden" name="action" value="restart">
-                            <button type="submit" class="btn btn-sm btn-info">Restart</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="2" class="text-center">No services</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1000px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .cog-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-table {
+        margin: 0;
+        font-size: 0.9rem;
+        table-layout: auto;
+    }
+
+    .pve-table th {
+        background-color: transparent;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 0.75rem 1rem;
+    }
+
+    .pve-table td {
+        padding: 0.75rem 1rem;
+        border-color: var(--pve-border);
+        vertical-align: middle;
+    }
+
+    .pve-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .pve-table tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .pve-table tbody tr:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-table .service-info {
+        font-family: 'Courier New', monospace;
+        color: var(--pve-text);
+        font-size: 0.9rem;
+        word-break: break-all;
+    }
+
+    .pve-table .btn-group {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+    }
+
+    .pve-table .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        min-width: 65px;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .pve-table .btn-success {
+        background-color: var(--pve-success);
+        border-color: var(--pve-success);
+    }
+
+    .pve-table .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .pve-table .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+    }
+
+    .pve-table .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+        color: #212529;
+    }
+
+    .pve-table .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+
+    .pve-table .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+    }
+
+    .pve-table .empty-state {
+        color: #777;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .cog-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-table {
+            font-size: 0.85rem;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .pve-table th,
+        .pve-table td {
+            padding: 0.5rem 0.35rem;
+        }
+        .pve-table .btn {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.5rem;
+            min-width: 55px;
+        }
+        .pve-table .btn-group {
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .pve-table .service-info {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="cog-icon">Cog</div>
+            <div>Services for VPS {{ vps.vps_id }}</div>
+        </div>
+
+        <div class="pve-body">
+            <div class="table-responsive">
+                <table class="table pve-table">
+                    <thead>
+                        <tr>
+                            <th>Service Info</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for serv in services %}
+                        <tr>
+                            <td class="service-info">{{ serv }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="service" value="{{ serv.split()[0] }}">
+                                        <input type="hidden" name="action" value="start">
+                                        <button type="submit" class="btn btn-sm btn-success">Start</button>
+                                    </form>
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="service" value="{{ serv.split()[0] }}">
+                                        <input type="hidden" name="action" value="stop">
+                                        <button type="submit" class="btn btn-sm btn-warning">Stop</button>
+                                    </form>
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="service" value="{{ serv.split()[0] }}">
+                                        <input type="hidden" name="action" value="restart">
+                                        <button type="submit" class="btn btn-sm btn-info">Restart</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="empty-state">No services detected</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
