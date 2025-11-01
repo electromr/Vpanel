@@ -3,74 +3,311 @@
 {% block title %}Manage Templates{% endblock %}
 
 {% block content %}
-<div class="card shadow mb-4">
-    <div class="card-header">
-        <h4>Create Template</h4>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="memory" class="form-label">Memory (GB)</label>
-                    <input type="number" class="form-control" id="memory" name="memory" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="cpu" class="form-label">CPU Cores</label>
-                    <input type="number" class="form-control" id="cpu" name="cpu" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="disk" class="form-label">Disk (GB)</label>
-                    <input type="number" class="form-control" id="disk" name="disk" required>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="os_image" class="form-label">OS Image</label>
-                <input type="text" class="form-control" id="os_image" name="os_image" required>
-            </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" name="description"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Create</button>
-        </form>
-    </div>
-</div>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
 
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Existing Templates</h4>
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .template-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-body .form-label {
+        font-size: 0.85rem;
+        color: var(--pve-text-muted);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .pve-body .form-control,
+    .pve-body .form-control:focus {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-body .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+    }
+
+    .pve-body .form-control::placeholder {
+        color: #777;
+    }
+
+    .pve-body textarea.form-control {
+        resize: vertical;
+        min-height: 90px;
+    }
+
+    .pve-body .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        min-width: 120px;
+        transition: all 0.2s;
+    }
+
+    .pve-body .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-body .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-table {
+        margin: 0;
+        font-size: 0.9rem;
+        table-layout: auto;
+    }
+
+    .pve-table th {
+        background-color: transparent;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 0.75rem 1rem;
+    }
+
+    .pve-table td {
+        padding: 0.75rem 1rem;
+        border-color: var(--pve-border);
+        vertical-align: middle;
+    }
+
+    .pve-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .pve-table tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .pve-table tbody tr:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-table .template-name {
+        font-family: 'Courier New', monospace;
+        font-weight: 500;
+        color: var(--pve-text);
+    }
+
+    .pve-table .spec {
+        color: #cccccc;
+        font-size: 0.9rem;
+    }
+
+    .pve-table .os-image {
+        font-family: 'Courier New', monospace;
+        color: var(--pve-accent);
+        font-size: 0.9rem;
+    }
+
+    .pve-table .description {
+        color: #bbbbbb;
+        font-size: 0.9rem;
+        max-width: 250px;
+        word-break: break-word;
+    }
+
+    .pve-table .empty-state {
+        color: #777;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    @media (max-width: 992px) {
+        .pve-body .row > div {
+            margin-bottom: 1rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+        }
+        .pve-header .template-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-body .btn {
+            width: 100%;
+        }
+        .pve-table {
+            font-size: 0.85rem;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .pve-table th,
+        .pve-table td {
+            padding: 0.5rem 0.35rem;
+        }
+        .pve-table .description {
+            max-width: 150px;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+
+    <!-- Create Template Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="template-icon">Cube</div>
+            <div>Create Template</div>
+        </div>
+        <div class="pve-body">
+            <form method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Template Name</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="name" 
+                           name="name" 
+                           placeholder="e.g., Ubuntu 22.04 Web Server" 
+                           required>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="memory" class="form-label">Memory (GB)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="memory" 
+                               name="memory" 
+                               min="1" 
+                               placeholder="4" 
+                               required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="cpu" class="form-label">CPU Cores</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="cpu" 
+                               name="cpu" 
+                               min="1" 
+                               placeholder="2" 
+                               required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="disk" class="form-label">Disk (GB)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="disk" 
+                               name="disk" 
+                               min="10" 
+                               placeholder="20" 
+                               required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="os_image" class="form-label">OS Image</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="os_image" 
+                           name="os_image" 
+                           placeholder="e.g., ubuntu-22.04-x86_64.iso" 
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" 
+                              id="description" 
+                              name="description" 
+                              rows="3" 
+                              placeholder="Brief description of this template..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Template</button>
+            </form>
+        </div>
     </div>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Memory</th>
-                <th>CPU</th>
-                <th>Disk</th>
-                <th>OS Image</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for temp in templates %}
-            <tr>
-                <td>{{ temp.name }}</td>
-                <td>{{ temp.memory }} GB</td>
-                <td>{{ temp.cpu }} cores</td>
-                <td>{{ temp.disk }} GB</td>
-                <td>{{ temp.os_image }}</td>
-                <td>{{ temp.description }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" class="text-center">No templates</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <!-- Existing Templates Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="template-icon">List</div>
+            <div>Existing Templates</div>
+        </div>
+        <div class="pve-body">
+            <div class="table-responsive">
+                <table class="table pve-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Memory</th>
+                            <th>CPU</th>
+                            <th>Disk</th>
+                            <th>OS Image</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for temp in templates %}
+                        <tr>
+                            <td class="template-name">{{ temp.name }}</td>
+                            <td class="spec">{{ temp.memory }} GB</td>
+                            <td class="spec">{{ temp.cpu }} cores</td>
+                            <td class="spec">{{ temp.disk }} GB</td>
+                            <td class="os-image">{{ temp.os_image }}</td>
+                            <td class="description">{{ temp.description or '—' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">No templates created yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
