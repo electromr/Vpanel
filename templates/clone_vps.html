@@ -1,13 +1,91 @@
 {% extends "base.html" %}
+
 {% block title %}Clone VPS {{ vps.vps_id }}{% endblock %}
+
 {% block content %}
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-body p {
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+        color: #cccccc;
+    }
+
+    .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.6rem 1.2rem;
+        min-width: 110px;
+        transition: all 0.2s;
+        margin-right: 0.75rem;
+    }
+
+    .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .btn-secondary {
+        background-color: #5a5a5a;
+        border-color: #5a5a5a;
+        color: #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4a4a4a;
+        border-color: #4a4a4a;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            margin-right: 0;
+        }
+    }
+</style>
+
 <div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
+    <div class="pve-card">
+        <div class="pve-header">
             <h3>Clone VPS {{ vps.vps_id }}</h3>
         </div>
-        <div class="card-body">
-            <p>Cloning will create a new VPS with the same configuration and data as {{ vps.vps_id }}.</p>
+        <div class="pve-body">
+            <p>
+                Cloning will create a new VPS with the same configuration and data as <strong>{{ vps.vps_id }}</strong>.
+            </p>
             <form method="POST" action="{{ url_for('clone_vps', vps_id=vps.vps_id) }}">
                 <button type="submit" class="btn btn-primary">Clone VPS</button>
                 <a href="{{ url_for('vps_details', vps_id=vps.vps_id) }}" class="btn btn-secondary">Cancel</a>
