@@ -1,78 +1,376 @@
 {% extends "base.html" %}
+
 {% block title %}Files - VPS {{ vps.vps_id }}{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
-            <h3>File Manager - VPS {{ vps.vps_id }}</h3>
-            <p>Current Path: {{ path }}</p>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1200px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .folder-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-header .path {
+        font-family: 'Courier New', monospace;
+        font-size: 1rem;
+        color: #cccccc;
+        word-break: break-all;
+        margin-left: auto;
+        font-weight: normal;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .pve-action-form {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .pve-action-form .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        max-width: 200px;
+    }
+
+    .pve-action-form .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+    }
+
+    .pve-action-form .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        min-width: 90px;
+    }
+
+    .pve-action-form .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-action-form .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-table {
+        margin: 0;
+        font-size: 0.9rem;
+        table-layout: auto;
+    }
+
+    .pve-table th {
+        background-color: transparent;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 0.75rem 0.5rem;
+        white-space: nowrap;
+    }
+
+    .pve-table td {
+        padding: 0.75rem 0.5rem;
+        border-color: var(--pve-border);
+        vertical-align: middle;
+        word-break: break-all;
+    }
+
+    .pve-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .pve-table tbody tr:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-table .file-name {
+        font-family: 'Courier New', monospace;
+        color: var(--pve-text);
+    }
+
+    .pve-table .file-name a {
+        color: var(--pve-accent);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .pve-table .file-name a:hover {
+        text-decoration: underline;
+    }
+
+    .pve-table .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        min-width: 70px;
+        margin-right: 0.25rem;
+        transition: all 0.2s;
+    }
+
+    .pve-table .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-table .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-table .btn-secondary {
+        background-color: #5a5a5a;
+        border-color: #5a5a5a;
+        color: #e0e0e0;
+    }
+
+    .pve-table .btn-secondary:hover {
+        background-color: #4a4a4a;
+        border-color: #4a4a4a;
+    }
+
+    .pve-table .btn-danger {
+        background-color: var(--pve-danger);
+        border-color: var(--pve-danger);
+    }
+
+    .pve-table .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .pve-footer {
+        margin-top: 1.5rem;
+        text-align: right;
+    }
+
+    .pve-footer .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        min-width: 100px;
+    }
+
+    .pve-footer .btn-secondary {
+        background-color: #5a5a5a;
+        border-color: #5a5a5a;
+        color: #e0e0e0;
+    }
+
+    .pve-footer .btn-secondary:hover {
+        background-color: #4a4a4a;
+        border-color: #4a4a4a;
+    }
+
+    @media (max-width: 992px) {
+        .pve-table {
+            font-size: 0.85rem;
+        }
+        .pve-table th,
+        .pve-table td {
+            padding: 0.5rem 0.35rem;
+        }
+        .pve-table .btn {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.5rem;
+            min-width: 60px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .path {
+            margin-left: 0;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-actions {
+            flex-direction: column;
+        }
+        .pve-action-form {
+            width: 100%;
+        }
+        .pve-action-form .form-control {
+            max-width: none;
+            width: 100%;
+        }
+        .pve-action-form .btn {
+            width: 100%;
+        }
+        .pve-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .pve-footer {
+            text-align: center;
+        }
+        .pve-footer .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="folder-icon">Folder</div>
+            <div>File Manager - VPS {{ vps.vps_id }}</div>
+            <div class="path">Current Path: {{ path }}</div>
         </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('vps_file_upload', vps_id=vps.vps_id) }}" enctype="multipart/form-data" class="mb-3">
-                <input type="hidden" name="path" value="{{ path }}">
-                <input type="file" name="file" class="form-control d-inline-block w-auto">
-                <button type="submit" class="btn btn-primary">Upload</button>
-            </form>
-            <form method="POST" action="{{ url_for('vps_mkdir', vps_id=vps.vps_id) }}" class="mb-3">
-                <input type="hidden" name="path" value="{{ path }}">
-                <input type="text" name="path" class="form-control d-inline-block w-auto" placeholder="New directory name">
-                <button type="submit" class="btn btn-primary">Create Directory</button>
-            </form>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Permissions</th>
-                        <th>Size</th>
-                        <th>Owner</th>
-                        <th>Group</th>
-                        <th>Modified</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for file in files %}
-                    <tr>
-                        <td>
-                            {% if file.permissions.startswith('d') %}
-                            <a href="{{ url_for('vps_files', vps_id=vps.vps_id, path=path + '/' + file.name if path != '/' else '/' + file.name) }}">{{ file.name }}</a>
-                            {% else %}
-                            {{ file.name }}
-                            {% endif %}
-                        </td>
-                        <td>{{ file.permissions }}</td>
-                        <td>{{ file.size }}</td>
-                        <td>{{ file.owner }}</td>
-                        <td>{{ file.group }}</td>
-                        <td>{{ file.month }} {{ file.day }} {{ file.time }}</td>
-                        <td>
-                            {% if not file.permissions.startswith('d') %}
-                            <a href="{{ url_for('vps_file_download', vps_id=vps.vps_id, path=path + '/' + file.name if path != '/' else '/' + file.name) }}" class="btn btn-sm btn-primary">Download</a>
-                            <a href="{{ url_for('vps_file_edit', vps_id=vps.vps_id, path=path + '/' + file.name if path != '/' else '/' + file.name) }}" class="btn btn-sm btn-secondary">Edit</a>
-                            {% endif %}
-                            <button onclick="deleteFile('{{ path + '/' + file.name if path != '/' else '/' + file.name }}')" class="btn btn-sm btn-danger">Delete</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <a href="{{ url_for('vps_details', vps_id=vps.vps_id) }}" class="btn btn-secondary">Back</a>
+
+        <div class="pve-body">
+            <!-- Upload & Create Directory -->
+            <div class="pve-actions">
+                <form method="POST" action="{{ url_for('vps_file_upload', vps_id=vps.vps_id) }}" 
+                      enctype="multipart/form-data" class="pve-action-form">
+                    <input type="hidden" name="path" value="{{ path }}">
+                    <input type="file" name="file" class="form-control" required>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+
+                <form method="POST" action="{{ url_for('vps_mkdir', vps_id=vps.vps_id) }}" class="pve-action-form">
+                    <input type="hidden" name="path" value="{{ path }}">
+                    <input type="text" name="dirname" class="form-control" placeholder="New directory name" required>
+                    <button type="submit" class="btn btn-primary">Create Directory</button>
+                </form>
+            </div>
+
+            <!-- File Table -->
+            <div class="table-responsive">
+                <table class="table pve-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Permissions</th>
+                            <th>Size</th>
+                            <th>Owner</th>
+                            <th>Group</th>
+                            <th>Modified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td class="file-name">
+                                {% if file.permissions.startswith('d') %}
+                                <a href="{{ url_for('vps_files', vps_id=vps.vps_id, 
+                                    path=(path + '/' + file.name) if path != '/' else '/' + file.name) }}">
+                                    {{ file.name }}
+                                </a>
+                                {% else %}
+                                {{ file.name }}
+                                {% endif %}
+                            </td>
+                            <td><code>{{ file.permissions }}</code></td>
+                            <td>{{ file.size }}</td>
+                            <td>{{ file.owner }}</td>
+                            <td>{{ file.group }}</td>
+                            <td>{{ file.month }} {{ file.day }} {{ file.time }}</td>
+                            <td>
+                                {% if not file.permissions.startswith('d') %}
+                                <a href="{{ url_for('vps_file_download', vps_id=vps.vps_id, 
+                                    path=(path + '/' + file.name) if path != '/' else '/' + file.name) }}" 
+                                   class="btn btn-sm btn-primary">Download</a>
+                                <a href="{{ url_for('vps_file_edit', vps_id=vps.vps_id, 
+                                    path=(path + '/' + file.name) if path != '/' else '/' + file.name) }}" 
+                                   class="btn btn-sm btn-secondary">Edit</a>
+                                {% endif %}
+                                <button onclick="deleteFile('{{ (path + '/' + file.name) if path != '/' else '/' + file.name }}')" 
+                                        class="btn btn-sm btn-danger">Delete</button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align:center; color:#777; font-style:italic; padding:2rem;">
+                                No files or directories
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pve-footer">
+                <a href="{{ url_for('vps_details', vps_id=vps.vps_id) }}" class="btn btn-secondary">Back to VPS</a>
+            </div>
         </div>
     </div>
 </div>
-{% block scripts %}
+
 <script>
 function deleteFile(path) {
-    if (confirm('Delete ' + path + '?')) {
+    if (confirm('Permanently delete:\n' + path + '\n\nThis action cannot be undone.')) {
         fetch('/vps/{{ vps.vps_id }}/files/delete', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'path=' + encodeURIComponent(path)
         })
         .then(response => response.json())
         .then(data => {
-            alert(data.message || data.error);
-            location.reload();
+            alert(data.message || data.error || 'Unknown response');
+            if (data.message) {
+                location.reload();
+            }
+        })
+        .catch(err => {
+            console.error('Delete error:', err);
+            alert('Failed to delete file. Check console.');
         });
     }
 }
