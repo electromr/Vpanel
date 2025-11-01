@@ -3,56 +3,191 @@
 {% block title %}Edit VPS{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Edit VPS {{ vps.vps_id }}</h4>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            <div class="mb-3">
-                <label for="user_id" class="form-label">User</label>
-                <select class="form-select" id="user_id" name="user_id">
-                    {% for user in users %}
-                    <option value="{{ user.id }}" {% if user.id == vps.created_by %}selected{% endif %}>{{ user.username }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="memory" class="form-label">Memory (GB)</label>
-                    <input type="number" class="form-control" id="memory" name="memory" value="{{ vps.memory }}" min="1" max="512" required>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-body .form-label {
+        font-size: 0.85rem;
+        color: var(--pve-text-muted);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .pve-body .form-control,
+    .pve-body .form-select {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-body .form-control:focus,
+    .pve-body .form-select:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+        color: var(--pve-text);
+    }
+
+    .pve-body .form-control::placeholder {
+        color: #777;
+    }
+
+    .pve-body .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        min-width: 140px;
+        transition: all 0.2s;
+    }
+
+    .pve-body .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-body .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-body .row {
+        margin-left: -0.75rem;
+        margin-right: -0.75rem;
+    }
+
+    .pve-body .col-md-4 {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .pve-body .mb-3 {
+        margin-bottom: 1.25rem !important;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-body .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .pve-body .col-md-4 {
+            padding-left: 0;
+            padding-right: 0;
+            margin-bottom: 1rem;
+        }
+        .pve-body .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <h4>Edit VPS {{ vps.vps_id }}</h4>
+        </div>
+        <div class="pve-body">
+            <form method="post">
+                <div class="mb-3">
+                    <label for="user_id" class="form-label">User</label>
+                    <select class="form-select" id="user_id" name="user_id" required>
+                        {% for user in users %}
+                        <option value="{{ user.id }}" {% if user.id == vps.created_by %}selected{% endif %}>
+                            {{ user.username }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="cpu" class="form-label">CPU Cores</label>
-                    <input type="number" class="form-control" id="cpu" name="cpu" value="{{ vps.cpu }}" min="1" max="32" required>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="memory" class="form-label">Memory (GB)</label>
+                        <input type="number" class="form-control" id="memory" name="memory" 
+                               value="{{ vps.memory }}" min="1" max="512" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="cpu" class="form-label">CPU Cores</label>
+                        <input type="number" class="form-control" id="cpu" name="cpu" 
+                               value="{{ vps.cpu }}" min="1" max="32" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="disk" class="form-label">Disk (GB)</label>
+                        <input type="number" class="form-control" id="disk" name="disk" 
+                               value="{{ vps.disk }}" min="10" max="1000" required>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="disk" class="form-label">Disk (GB)</label>
-                    <input type="number" class="form-control" id="disk" name="disk" value="{{ vps.disk }}" min="10" max="1000" required>
+
+                <div class="mb-3">
+                    <label for="os_image" class="form-label">OS Image</label>
+                    <select class="form-select" id="os_image" name="os_image">
+                        <option value="">-- No change --</option>
+                        {% for img in os_images %}
+                        <option value="{{ img }}" {% if img == vps.os_image %}selected{% endif %}>
+                            {{ img }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Leave blank to keep current image.</div>
                 </div>
-            </div>
-            <div class="mb-3">
-                <label for="os_image" class="form-label">OS Image</label>
-                <select class="form-select" id="os_image" name="os_image">
-                    {% for img in os_images %}
-                    <option value="{{ img }}" {% if img == vps.os_image %}selected{% endif %}>{{ img }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="additional_ports" class="form-label">Additional Ports</label>
-                <input type="text" class="form-control" id="additional_ports" name="additional_ports" value="{{ vps.additional_ports }}" placeholder="3000:3000,8080:80">
-            </div>
-            <div class="mb-3">
-                <label for="bandwidth_limit" class="form-label">Bandwidth Limit (MB)</label>
-                <input type="number" class="form-control" id="bandwidth_limit" name="bandwidth_limit" value="{{ vps.bandwidth_limit }}" min="0">
-            </div>
-            <div class="mb-3">
-                <label for="tags" class="form-label">Tags</label>
-                <input type="text" class="form-control" id="tags" name="tags" value="{{ vps.tags }}">
-            </div>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-        </form>
+
+                <div class="mb-3">
+                    <label for="additional_ports" class="form-label">Additional Ports</label>
+                    <input type="text" class="form-control" id="additional_ports" name="additional_ports" 
+                           value="{{ vps.additional_ports }}" placeholder="3000:3000,8080:80">
+                    <div class="form-text">Format: host:container, comma separated</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="bandwidth_limit" class="form-label">Bandwidth Limit (MB)</label>
+                    <input type="number" class="form-control" id="bandwidth_limit" name="bandwidth_limit" 
+                           value="{{ vps.bandwidth_limit }}" min="0">
+                    <div class="form-text">0 = unlimited</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="tags" class="form-label">Tags</label>
+                    <input type="text" class="form-control" id="tags" name="tags" 
+                           value="{{ vps.tags }}" placeholder="web,prod,backup">
+                    <div class="form-text">Comma separated</div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
