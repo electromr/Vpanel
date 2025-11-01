@@ -3,19 +3,185 @@
 {% block title %}Firewall - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Firewall for VPS {{ vps.vps_id }}</h4>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" name="fw_command" placeholder="e.g., allow 80/tcp" required>
-                <button type="submit" class="btn btn-primary">Execute</button>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .shield-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-command {
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-command .input-group {
+        max-width: 600px;
+    }
+
+    .pve-command .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px 0 0 4px;
+        padding: 0.65rem 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-command .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+        color: var(--pve-text);
+    }
+
+    .pve-command .form-control::placeholder {
+        color: #777;
+        font-style: italic;
+    }
+
+    .pve-command .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+        border-radius: 0 4px 4px 0;
+        padding: 0.65rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .pve-command .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-status {
+        margin-top: 1.5rem;
+    }
+
+    .pve-status h5 {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pve-status .status-icon {
+        color: var(--pve-success);
+    }
+
+    .pve-status pre {
+        background-color: #1e1e1e;
+        color: #dcdcdc;
+        border: 1px solid var(--pve-border);
+        border-radius: 4px;
+        padding: 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        max-height: 400px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 0;
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .shield-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-command .input-group {
+            flex-direction: column;
+        }
+        .pve-command .form-control {
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .pve-command .btn-primary {
+            border-radius: 4px;
+            width: 100%;
+        }
+        .pve-status pre {
+            font-size: 0.85rem;
+            padding: 0.75rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="shield-icon">Shield</div>
+            <div>Firewall for VPS {{ vps.vps_id }}</div>
+        </div>
+
+        <div class="pve-body">
+            <!-- Command Input -->
+            <form method="post" class="pve-command">
+                <div class="input-group">
+                    <input type="text" 
+                           class="form-control" 
+                           name="fw_command" 
+                           placeholder="e.g., allow 80/tcp, block 22/tcp, list" 
+                           required>
+                    <button type="submit" class="btn btn-primary">Execute</button>
+                </div>
+                <small class="text-muted d-block mt-2">
+                    Use: <code>allow PORT[/PROTO]</code>, <code>block PORT[/PROTO]</code>, <code>list</code>
+                </small>
+            </form>
+
+            <!-- Current Status -->
+            <div class="pve-status">
+                <h5>
+                    <span class="status-icon">Check</span>
+                    Current Firewall Status
+                </h5>
+                <pre>{{ status }}</pre>
             </div>
-        </form>
-        <h5>Current Status</h5>
-        <pre class="bg-light p-3 border">{{ status }}</pre>
+        </div>
     </div>
 </div>
 {% endblock %}
