@@ -3,37 +3,189 @@
 {% block title %}Manage Groups{% endblock %}
 
 {% block content %}
-<div class="card shadow mb-4">
-    <div class="card-header">
-        <h4>Create Group</h4>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
-            </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" name="description"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Create</button>
-        </form>
-    </div>
-</div>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
 
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Existing Groups</h4>
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-body .form-label {
+        font-size: 0.85rem;
+        color: var(--pve-text-muted);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .pve-body .form-control,
+    .pve-body .form-control:focus {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-body .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+    }
+
+    .pve-body .form-control::placeholder {
+        color: #777;
+    }
+
+    .pve-body .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        min-width: 120px;
+        transition: all 0.2s;
+    }
+
+    .pve-body .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-body .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-list {
+        margin: 0;
+        padding: 0;
+    }
+
+    .pve-list .list-group-item {
+        background-color: var(--pve-panel);
+        border-color: var(--pve-border);
+        color: var(--pve-text);
+        padding: 1rem 1.5rem;
+        font-size: 0.95rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pve-list .list-group-item strong {
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .pve-list .list-group-item .description {
+        color: #cccccc;
+        font-size: 0.9rem;
+    }
+
+    .pve-list .list-group-item.text-muted {
+        color: #777 !important;
+        font-style: italic;
+        justify-content: center;
+    }
+
+    .pve-list .list-group-item + .list-group-item {
+        border-top: none;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-body .btn {
+            width: 100%;
+        }
+        .pve-list .list-group-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        .pve-list .list-group-item .description {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+
+    <!-- Create Group Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <h4>Create Group</h4>
+        </div>
+        <div class="pve-body">
+            <form method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Group Name</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="name" 
+                           name="name" 
+                           placeholder="e.g., developers, testers" 
+                           required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" 
+                              id="description" 
+                              name="description" 
+                              rows="3" 
+                              placeholder="Optional description..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Group</button>
+            </form>
+        </div>
     </div>
-    <ul class="list-group list-group-flush">
-        {% for group in groups %}
-        <li class="list-group-item">
-            <strong>{{ group.name }}</strong> - {{ group.description }}
-        </li>
-        {% else %}
-        <li class="list-group-item text-muted">No groups</li>
-        {% endfor %}
-    </ul>
+
+    <!-- Existing Groups Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <h4>Existing Groups</h4>
+        </div>
+        <ul class="list-group list-group-flush pve-list">
+            {% for group in groups %}
+            <li class="list-group-item">
+                <div>
+                    <strong>{{ group.name }}</strong>
+                    {% if group.description %}
+                    <span class="description">— {{ group.description }}</span>
+                    {% endif %}
+                </div>
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted">No groups created yet</li>
+            {% endfor %}
+        </ul>
+    </div>
+
 </div>
 {% endblock %}
