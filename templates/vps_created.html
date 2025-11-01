@@ -3,30 +3,221 @@
 {% block title %}VPS Created{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>VPS Created Successfully</h4>
-    </div>
-    <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-3">VPS ID</dt>
-            <dd class="col-sm-9">{{ vps.vps_id }}</dd>
-            <dt class="col-sm-3">Server IP</dt>
-            <dd class="col-sm-9">{{ server_ip }}</dd>
-            <dt class="col-sm-3">SSH Port</dt>
-            <dd class="col-sm-9">{{ vps.port }}</dd>
-            <dt class="col-sm-3">Username</dt>
-            <dd class="col-sm-9">root</dd>
-            <dt class="col-sm-3">Password</dt>
-            <dd class="col-sm-9"><code>{{ vps.password }}</code></dd>
-            <dt class="col-sm-3">tMate Session</dt>
-            <dd class="col-sm-9">{{ vps.tmate_session or 'Not available' }}</dd>
-            <dt class="col-sm-3">Additional Ports</dt>
-            <dd class="col-sm-9">{{ vps.additional_ports or 'None' }}</dd>
-            <dt class="col-sm-3">Expires At</dt>
-            <dd class="col-sm-9">{{ vps.expires_at }}</dd>
-        </dl>
-        <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background: linear-gradient(135deg, var(--pve-success), #1a8c5e);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1.25rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .check-icon {
+        font-size: 1.3rem;
+        color: #ffffff;
+    }
+
+    .pve-body {
+        padding: 1.75rem;
+        color: var(--pve-text);
+    }
+
+    .pve-dl {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .pve-dl dt {
+        font-weight: 600;
+        color: var(--pve-text-muted);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        padding-right: 1rem;
+    }
+
+    .pve-dl dd {
+        margin-bottom: 1.25rem;
+        color: #ffffff;
+        word-break: break-all;
+    }
+
+    .pve-dl dd code {
+        background-color: #1e1e1e;
+        color: var(--pve-accent);
+        padding: 0.35rem 0.6rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: inline-block;
+        min-width: 120px;
+        border: 1px solid var(--pve-border);
+    }
+
+    .pve-dl .badge {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #cccccc;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 4px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pve-dl .highlight {
+        color: var(--pve-accent);
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+    }
+
+    .pve-actions {
+        margin-top: 1.5rem;
+        text-align: center;
+    }
+
+    .pve-actions .btn {
+        border-radius: 4px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        min-width: 180px;
+        transition: all 0.2s;
+    }
+
+    .pve-actions .btn-primary {
+        background: linear-gradient(135deg, var(--pve-accent), #0ea5e9);
+        border: none;
+        color: #000;
+    }
+
+    .pve-actions .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(6, 182, 212, 0.3);
+    }
+
+    .pve-warning {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--pve-danger);
+        color: #fca5a5;
+        padding: 1rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-top: 1.5rem;
+        text-align: center;
+    }
+
+    .pve-warning strong {
+        color: #fca5a5;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+            padding: 1rem;
+        }
+        .pve-header .check-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1.25rem;
+        }
+        .pve-dl dt,
+        .pve-dl dd {
+            font-size: 0.9rem;
+        }
+        .pve-dl dd code {
+            font-size: 0.85rem;
+            padding: 0.3rem 0.5rem;
+        }
+        .pve-actions .btn {
+            width: 100%;
+        }
+        .pve-warning {
+            font-size: 0.85rem;
+            padding: 0.75rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="check-icon">Check Circle</div>
+            <div>VPS Created Successfully</div>
+        </div>
+
+        <div class="pve-body">
+            <dl class="row pve-dl">
+                <dt class="col-sm-3">VPS ID</dt>
+                <dd class="col-sm-9 highlight">{{ vps.vps_id }}</dd>
+
+                <dt class="col-sm-3">Server IP</dt>
+                <dd class="col-sm-9 highlight">{{ server_ip }}</dd>
+
+                <dt class="col-sm-3">SSH Port</dt>
+                <dd class="col-sm-9"><code>{{ vps.port }}</code></dd>
+
+                <dt class="col-sm-3">Username</dt>
+                <dd class="col-sm-9"><code>root</code></dd>
+
+                <dt class="col-sm-3">Password</dt>
+                <dd class="col-sm-9"><code>{{ vps.password }}</code></dd>
+
+                <dt class="col-sm-3">tMate Session</dt>
+                <dd class="col-sm-9">
+                    {% if vps.tmate_session %}
+                        <code>{{ vps.tmate_session }}</code>
+                        <span class="badge">Ready</span>
+                    {% else %}
+                        <em>Not available</em>
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Additional Ports</dt>
+                <dd class="col-sm-9">
+                    {% if vps.additional_ports %}
+                        <code>{{ vps.additional_ports }}</code>
+                    {% else %}
+                        <em>None</em>
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Expires At</dt>
+                <dd class="col-sm-9 highlight">{{ vps.expires_at }}</dd>
+            </dl>
+
+            <div class="pve-warning">
+                <strong>Save your credentials now!</strong> The password will not be shown again.
+            </div>
+
+            <div class="pve-actions">
+                <a href="/dashboard" class="btn btn-primary">
+                    Dashboard
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
