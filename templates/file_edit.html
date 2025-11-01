@@ -1,20 +1,220 @@
 {% extends "base.html" %}
+
 {% block title %}Edit File - VPS {{ vps.vps_id }}{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
-            <h3>Edit File: {{ path }} - VPS {{ vps.vps_id }}</h3>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1000px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .file-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-header .file-path {
+        font-family: 'Courier New', monospace;
+        font-size: 1rem;
+        color: #cccccc;
+        word-break: break-all;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-editor {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-editor textarea {
+        background-color: #1e1e1e;
+        color: #dcdcdc;
+        border: 1px solid var(--pve-border);
+        border-radius: 4px;
+        padding: 1rem;
+        font-family: 'Courier New', Monaco, monospace;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        width: 100%;
+        min-height: 500px;
+        resize: vertical;
+        transition: all 0.2s;
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    .pve-editor textarea:focus {
+        outline: none;
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25), inset 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    .pve-editor .line-numbers {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3.5rem;
+        padding: 1rem 0.5rem;
+        background-color: #2a2a2a;
+        color: #777;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        text-align: right;
+        user-select: none;
+        border-right: 1px solid var(--pve-border);
+        overflow: hidden;
+    }
+
+    .pve-editor .editor-content {
+        margin-left: 4rem;
+        position: relative;
+    }
+
+    .pve-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .pve-actions .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        min-width: 110px;
+        transition: all 0.2s;
+    }
+
+    .pve-actions .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-actions .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-actions .btn-secondary {
+        background-color: #5a5a5a;
+        border-color: #5a5a5a;
+        color: #e0e0e0;
+    }
+
+    .pve-actions .btn-secondary:hover {
+        background-color: #4a4a4a;
+        border-color: #4a4a4a;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .file-path {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-editor textarea {
+            min-height: 400px;
+            font-size: 0.9rem;
+        }
+        .pve-editor .line-numbers {
+            display: none;
+        }
+        .pve-editor .editor-content {
+            margin-left: 0;
+        }
+        .pve-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="file-icon">File</div>
+            <div>
+                <div>Edit File</div>
+                <div class="file-path">{{ path }}</div>
+            </div>
         </div>
-        <div class="card-body">
+        <div class="pve-body">
             <form method="POST" action="{{ url_for('vps_file_edit', vps_id=vps.vps_id, path=path) }}">
-                <div class="mb-3">
-                    <textarea class="form-control" name="content" rows="20">{{ content }}</textarea>
+                <div class="pve-editor">
+                    <div class="line-numbers" id="lineNumbers"></div>
+                    <div class="editor-content">
+                        <textarea name="content" id="editor" rows="20">{{ content }}</textarea>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a href="{{ url_for('vps_files', vps_id=vps.vps_id, path=path | dirname) }}" class="btn btn-secondary">Cancel</a>
+
+                <div class="pve-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{{ url_for('vps_files', vps_id=vps.vps_id, path=path | dirname) }}" class="btn btn-secondary">Cancel</a>
+                </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    // Dynamic line numbers
+    const textarea = document.getElementById('editor');
+    const lineNumbers = document.getElementById('lineNumbers');
+
+    function updateLineNumbers() {
+        const lines = textarea.value.split('\n').length;
+        let content = '';
+        for (let i = 1; i <= lines; i++) {
+            content += i + '\n';
+        }
+        lineNumbers.textContent = content;
+    }
+
+    textarea.addEventListener('input', updateLineNumbers);
+    textarea.addEventListener('scroll', () => {
+        lineNumbers.scrollTop = textarea.scrollTop;
+    });
+
+    // Initial update
+    updateLineNumbers();
+
+    // Auto-resize textarea
+    function autoResize() {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    }
+    textarea.addEventListener('input', autoResize);
+    window.addEventListener('load', autoResize);
+</script>
 {% endblock %}
