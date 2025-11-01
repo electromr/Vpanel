@@ -3,25 +3,125 @@
 {% block title %}Add User{% endblock %}
 
 {% block content %}
+<style>
+    :root {
+        --pve-bg: #1a1a1a;
+        --pve-panel: #2a2a2a;
+        --pve-border: #404040;
+        --pve-text: #e0e0e0;
+        --pve-text-muted: #a0a0a0;
+        --pve-accent: #007acc;
+        --pve-accent-hover: #005a99;
+    }
+
+    body {
+        background-color: var(--pve-bg);
+        color: var(--pve-text);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.5;
+    }
+
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+    }
+
+    .pve-header {
+        background-color: #0f0f0f;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: var(--pve-text);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+    }
+
+    .form-label {
+        color: var(--pve-text);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 3px;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+        width: 100%;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: #3a3a3a;
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+        color: var(--pve-text);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: var(--pve-text-muted);
+    }
+
+    .btn-pve {
+        background-color: var(--pve-accent);
+        border: 1px solid var(--pve-accent);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 3px;
+        font-weight: 500;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn-pve:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+        color: white;
+    }
+
+    .mb-3 {
+        margin-bottom: 1.25rem;
+    }
+
+    .row {
+        margin: 2rem 0;
+    }
+
+    .justify-content-center {
+        display: flex;
+        justify-content: center;
+    }
+</style>
+
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header">
+        <div class="pve-card">
+            <div class="pve-header">
                 <h4>Add New User</h4>
             </div>
-            <div class="card-body">
+            <div class="pve-body">
                 <form method="post">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" minlength="12" required>
+                        <input type="password" class="form-control" id="password" name="password" minlength="12" placeholder="Min 12 characters" required>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="user@domain.com">
                     </div>
                     <div class="mb-3">
                         <label for="role" class="form-label">Role</label>
@@ -30,7 +130,7 @@
                             <option value="admin">Admin</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Add User</button>
+                    <button type="submit" class="btn btn-pve">Add User</button>
                 </form>
             </div>
         </div>
