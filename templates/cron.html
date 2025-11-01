@@ -3,24 +3,143 @@
 {% block title %}Cron Jobs - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Cron Jobs for VPS {{ vps.vps_id }}</h4>
-    </div>
-    <div class="card-body">
-        <form method="post" class="mb-3">
-            <div class="input-group">
-                <input type="text" class="form-control" name="cron_job" placeholder="* * * * * command" required>
-                <button type="submit" class="btn btn-primary">Add Cron Job</button>
-            </div>
-        </form>
-        <ul class="list-group">
-            {% for cron in crons %}
-            <li class="list-group-item">{{ cron }}</li>
-            {% else %}
-            <li class="list-group-item text-muted">No cron jobs</li>
-            {% endfor %}
-        </ul>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-body .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px 0 0 4px;
+        padding: 0.65rem 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-body .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+        color: var(--pve-text);
+    }
+
+    .pve-body .form-control::placeholder {
+        color: #777;
+    }
+
+    .pve-body .input-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-body .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+        border-radius: 0 4px 4px 0;
+        padding: 0.65rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .pve-body .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-body .list-group {
+        margin: 0;
+        padding: 0;
+    }
+
+    .pve-body .list-group-item {
+        background-color: #2a2a2a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        padding: 0.75rem 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        word-break: break-all;
+        transition: background-color 0.2s;
+    }
+
+    .pve-body .list-group-item:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-body .list-group-item.text-muted {
+        color: #777 !important;
+        font-style: italic;
+    }
+
+    .pve-body .list-group-item + .list-group-item {
+        border-top: none;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-body .input-group {
+            flex-direction: column;
+        }
+        .pve-body .form-control {
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .pve-body .btn-primary {
+            border-radius: 4px;
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <h4>Cron Jobs for VPS {{ vps.vps_id }}</h4>
+        </div>
+        <div class="pve-body">
+            <form method="post" class="mb-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="cron_job" placeholder="* * * * * command" required>
+                    <button type="submit" class="btn btn-primary">Add Cron Job</button>
+                </div>
+            </form>
+
+            <ul class="list-group">
+                {% for cron in crons %}
+                <li class="list-group-item">{{ cron }}</li>
+                {% else %}
+                <li class="list-group-item text-muted">No cron jobs configured</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 </div>
 {% endblock %}
