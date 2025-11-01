@@ -3,40 +3,228 @@
 {% block title %}File Manager - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>File Manager for VPS {{ vps.vps_id }} - Path: {{ path }}</h4>
-    </div>
-    <div class="card-body">
-        <form method="post" action="/vps/{{ vps.vps_id }}/upload" enctype="multipart/form-data" class="mb-3">
-            <input type="hidden" name="path" value="{{ path }}">
-            <div class="input-group">
-                <input type="file" class="form-control" name="file">
-                <button type="submit" class="btn btn-primary">Upload</button>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1000px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .folder-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-header .path {
+        font-family: 'Courier New', monospace;
+        font-size: 1rem;
+        color: #cccccc;
+        word-break: break-all;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-upload {
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-upload .input-group {
+        max-width: 500px;
+    }
+
+    .pve-upload .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px 0 0 4px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .pve-upload .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+    }
+
+    .pve-upload .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+        border-radius: 0 4px 4px 0;
+        padding: 0.65rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .pve-upload .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-table {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .pve-table th {
+        background-color: transparent;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 0.75rem 1rem;
+    }
+
+    .pve-table td {
+        padding: 0.75rem 1rem;
+        border-color: var(--pve-border);
+        vertical-align: middle;
+    }
+
+    .pve-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .pve-table tbody tr:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-table .file-name {
+        font-family: 'Courier New', monospace;
+        color: var(--pve-text);
+        word-break: break-all;
+    }
+
+    .pve-table .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 80px;
+        transition: all 0.2s;
+    }
+
+    .pve-table .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+    }
+
+    .pve-table .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+    }
+
+    .pve-table .empty-state {
+        color: #777;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .path {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-upload .input-group {
+            flex-direction: column;
+        }
+        .pve-upload .form-control {
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .pve-upload .btn-primary {
+            border-radius: 4px;
+            width: 100%;
+        }
+        .pve-table {
+            font-size: 0.85rem;
+        }
+        .pve-table .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="folder-icon">Folder</div>
+            <div>
+                <div>File Manager</div>
+                <div class="path">{{ path }}</div>
             </div>
-        </form>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for file in files %}
-                <tr>
-                    <td>{{ file }}</td>
-                    <td>
-                        <a href="/vps/{{ vps.vps_id }}/download?path={{ path }}/{{ file }}" class="btn btn-sm btn-info">Download</a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="2" class="text-center">No files</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        </div>
+        <div class="pve-body">
+            <!-- Upload Form -->
+            <form method="post" action="/vps/{{ vps.vps_id }}/upload" enctype="multipart/form-data" class="pve-upload">
+                <input type="hidden" name="path" value="{{ path }}">
+                <div class="input-group">
+                    <input type="file" class="form-control" name="file" required>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+
+            <!-- File Table -->
+            <table class="table pve-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in files %}
+                    <tr>
+                        <td class="file-name">{{ file }}</td>
+                        <td>
+                            <a href="/vps/{{ vps.vps_id }}/download?path={{ path }}/{{ file }}" 
+                               class="btn btn-sm btn-info">Download</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2" class="empty-state">No files in this directory</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
