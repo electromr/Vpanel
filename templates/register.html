@@ -1,133 +1,360 @@
 {% extends "base.html" %}
 
+{% block title %}Register{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-lg border-0">
-            <div class="card-header bg-gradient-success text-white text-center py-4">
-                <h3 class="mb-0"><i class="fas fa-user-plus me-2"></i>Create Your Account</h3>
-                <p class="mb-0 opacity-75">Join our community today</p>
-            </div>
-            <div class="card-body p-5">
-                {% if error %}
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <div>{{ error }}</div>
-                </div>
-                {% endif %}
-                
-                <form method="POST" id="registerForm" novalidate>
-                    <div class="mb-4">
-                        <label for="username" class="form-label fw-semibold">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fas fa-user"></i></span>
-                            <input type="text" class="form-control" id="username" name="username" 
-                                   required minlength="3" maxlength="20"
-                                   placeholder="Choose a username">
-                        </div>
-                        <div class="form-text">3-20 characters. Letters, numbers, and underscores only.</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="email" class="form-label fw-semibold">Email Address</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fas fa-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" name="email" 
-                                   required placeholder="your@email.com">
-                        </div>
-                        <div class="form-text">We'll never share your email with anyone else.</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="password" class="form-label fw-semibold">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" 
-                                   required minlength="12" placeholder="Create a strong password">
-                            <button type="button" class="btn btn-outline-secondary toggle-password" 
-                                    data-target="password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="password-strength mt-2">
-                            <div class="progress" style="height: 4px;">
-                                <div class="progress-bar" id="passwordStrengthBar"></div>
-                            </div>
-                            <small class="text-muted" id="passwordStrengthText">Password strength</small>
-                        </div>
-                        <div class="form-text">Minimum 12 characters with mix of letters, numbers, and symbols.</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="confirm_password" 
-                                   name="confirm_password" required placeholder="Re-enter your password">
-                            <button type="button" class="btn btn-outline-secondary toggle-password" 
-                                    data-target="confirm_password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="invalid-feedback" id="confirmPasswordFeedback">
-                            Passwords do not match.
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="referral_code" class="form-label fw-semibold">Referral Code (Optional)</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fas fa-gift"></i></span>
-                            <input type="text" class="form-control" id="referral_code" name="referral_code" 
-                                   placeholder="Enter referral code if you have one">
-                        </div>
-                        <div class="form-text">Get bonus features when using a referral code.</div>
-                    </div>
-                    
-                    <div class="mb-4 form-check">
-                        <input type="checkbox" class="form-check-input" id="terms" required>
-                        <label class="form-check-label small" for="terms">
-                            I agree to the <a href="#" class="text-success">Terms of Service</a> 
-                            and <a href="#" class="text-success">Privacy Policy</a>
-                        </label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-success btn-lg w-100 py-2 mb-3" id="submitBtn">
-                        <i class="fas fa-user-plus me-2"></i>Create Account
-                    </button>
-                    
-                    <div class="text-center">
-                        <p class="text-muted mb-0">Already have an account?</p>
-                        <a href="{{ url_for('login') }}" class="btn btn-outline-success btn-sm mt-1">
-                            <i class="fas fa-sign-in-alt me-1"></i>Sign In
-                        </a>
-                    </div>
-                </form>
-            </div>
+<style>
+    .pve-register-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 8px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        max-width: 500px;
+        margin: 2rem auto;
+    }
+
+    .pve-register-header {
+        background: linear-gradient(135deg, var(--pve-success), #1a8c5e);
+        padding: 1.75rem 1.5rem;
+        text-align: center;
+        color: #ffffff;
+    }
+
+    .pve-register-header h3 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .pve-register-header .user-plus {
+        font-size: 1.3rem;
+    }
+
+    .pve-register-header p {
+        margin: 0.5rem 0 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .pve-register-body {
+        padding: 2rem 1.75rem;
+        color: var(--pve-text);
+    }
+
+    .pve-register-body .alert-danger {
+        background-color: rgba(220, 53, 69, 0.15);
+        border: 1px solid var(--pve-danger);
+        color: #f8d7da;
+        border-radius: 4px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pve-register-body .form-label {
+        font-size: 0.9rem;
+        color: var(--pve-text-muted);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .pve-register-body .input-group {
+        margin-bottom: 0.25rem;
+    }
+
+    .pve-register-body .input-group-text {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: #aaaaaa;
+        border-right: none;
+        border-radius: 4px 0 0 4px;
+        padding: 0.65rem 0.8rem;
+    }
+
+    .pve-register-body .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 0 4px 4px 0;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-register-body .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+        color: var(--pve-text);
+    }
+
+    .pve-register-body .form-control::placeholder {
+        color: #777;
+    }
+
+    .pve-register-body .form-text {
+        font-size: 0.8rem;
+        color: #888;
+        margin-top: 0.35rem;
+    }
+
+    .pve-register-body .toggle-password {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        border-left: none;
+        color: #aaaaaa;
+        border-radius: 0 4px 4px 0;
+        padding: 0.65rem 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pve-register-body .toggle-password:hover {
+        background-color: #4a4a4a;
+        color: #cccccc;
+    }
+
+    .pve-register-body .password-strength {
+        margin-top: 0.75rem;
+    }
+
+    .pve-register-body .progress {
+        height: 4px;
+        background-color: #2a2a2a;
+        border-radius: 2px;
+    }
+
+    .pve-register-body .progress-bar {
+        transition: width 0.3s ease;
+    }
+
+    .pve-register-body .progress-bar.bg-danger { background-color: var(--pve-danger); }
+    .pve-register-body .progress-bar.bg-warning { background-color: #ffc107; }
+    .pve-register-body .progress-bar.bg-success { background-color: var(--pve-success); }
+
+    .pve-register-body .form-check-input {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+    }
+
+    .pve-register-body .form-check-input:checked {
+        background-color: var(--pve-success);
+        border-color: var(--pve-success);
+    }
+
+    .pve-register-body .form-check-label a {
+        color: var(--pve-accent);
+        text-decoration: none;
+    }
+
+    .pve-register-body .form-check-label a:hover {
+        text-decoration: underline;
+    }
+
+    .pve-register-body .btn-success {
+        background: linear-gradient(135deg, var(--pve-success), #1a8c5e);
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        padding: 0.85rem 1.5rem;
+        font-size: 1rem;
+        width: 100%;
+        margin-top: 1rem;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pve-register-body .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+    }
+
+    .pve-register-body .btn-outline-success {
+        border-color: var(--pve-border);
+        color: var(--pve-text-muted);
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .pve-register-body .btn-outline-success:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+        color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-features {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+        color: #777;
+    }
+
+    .pve-feature {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pve-feature i {
+        color: var(--pve-success);
+        font-size: 1rem;
+    }
+
+    @media (max-width: 576px) {
+        .pve-register-card {
+            margin: 1rem;
+            border-radius: 6px;
+        }
+        .pve-register-header {
+            padding: 1.25rem 1rem;
+        }
+        .pve-register-header h3 {
+            font-size: 1.2rem;
+        }
+        .pve-register-body {
+            padding: 1.5rem 1rem;
+        }
+        .pve-features {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="pve-register-card">
+        <div class="pve-register-header">
+            <h3>
+                <span class="user-plus">User Plus</span>
+                Create Your Account
+            </h3>
+            <p>Join our community today</p>
         </div>
-        
-        <!-- Security Features Info -->
-        <div class="mt-4 text-center">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <i class="fas fa-shield-alt text-success me-2"></i>
-                        <small class="text-muted">Secure Registration</small>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <i class="fas fa-clock text-success me-2"></i>
-                        <small class="text-muted">3 Attempts per Hour</small>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <i class="fas fa-user-check text-success me-2"></i>
-                        <small class="text-muted">Instant Access</small>
-                    </div>
-                </div>
+
+        <div class="pve-register-body">
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                Warning {{ error }}
             </div>
+            {% endif %}
+
+            <form method="POST" id="registerForm" novalidate>
+                <!-- Username -->
+                <div class="mb-4">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text">User</span>
+                        <input type="text" class="form-control" id="username" name="username"
+                               required minlength="3" maxlength="20"
+                               placeholder="Choose a username">
+                    </div>
+                    <div class="form-text">3–20 characters. Letters, numbers, underscores only.</div>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-4">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Envelope</span>
+                        <input type="email" class="form-control" id="email" name="email"
+                               required placeholder="your@email.com">
+                    </div>
+                    <div class="form-text">We'll never share your email.</div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Lock</span>
+                        <input type="password" class="form-control" id="password" name="password"
+                               required minlength="12" placeholder="Create a strong password">
+                        <button type="button" class="btn toggle-password" data-target="password">
+                            Eye
+                        </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="progress">
+                            <div class="progress-bar" id="passwordStrengthBar"></div>
+                        </div>
+                        <small class="text-muted" id="passwordStrengthText">Password strength</small>
+                    </div>
+                    <div class="form-text">Min 12 chars with letters, numbers, symbols.</div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-4">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Lock</span>
+                        <input type="password" class="form-control" id="confirm_password"
+                               name="confirm_password" required placeholder="Re-enter password">
+                        <button type="button" class="btn toggle-password" data-target="confirm_password">
+                            Eye
+                        </button>
+                    </div>
+                    <div class="invalid-feedback" id="confirmPasswordFeedback">
+                        Passwords do not match.
+                    </div>
+                </div>
+
+                <!-- Referral Code -->
+                <div class="mb-4">
+                    <label for="referral_code" class="form-label">Referral Code (Optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Gift</span>
+                        <input type="text" class="form-control" id="referral_code" name="referral_code"
+                               placeholder="Enter code if you have one">
+                    </div>
+                    <div class="form-text">Get bonus features with a referral.</div>
+                </div>
+
+                <!-- Terms -->
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input" id="terms" required>
+                    <label class="form-check-label" for="terms">
+                        I agree to the <a href="#" class="text-info">Terms</a> and <a href="#" class="text-info">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn btn-success" id="submitBtn">
+                    User Plus Create Account
+                </button>
+
+                <!-- Login Link -->
+                <div class="text-center mt-3">
+                    <p class="text-muted mb-0">Already have an account?</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-success btn-sm">
+                        Sign In
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Security Features -->
+    <div class="pve-features">
+        <div class="pve-feature">
+            Shield Secure Registration
+        </div>
+        <div class="pve-feature">
+            Clock 3 Attempts per Hour
+        </div>
+        <div class="pve-feature">
+            User Check Instant Access
         </div>
     </div>
 </div>
@@ -136,155 +363,64 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Password visibility toggle
-    document.querySelectorAll('.toggle-password').forEach(button => {
-        button.addEventListener('click', function() {
+    // Password toggle
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
             const target = this.getAttribute('data-target');
             const input = document.getElementById(target);
-            const icon = this.querySelector('i');
-            
+            const icon = this.querySelector('i') || this;
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.className = 'fas fa-eye-slash';
+                icon.textContent = 'Eye Slash';
             } else {
                 input.type = 'password';
-                icon.className = 'fas fa-eye';
+                icon.textContent = 'Eye';
             }
         });
     });
-    
-    // Password strength indicator
-    const passwordInput = document.getElementById('password');
-    const strengthBar = document.getElementById('passwordStrengthBar');
-    const strengthText = document.getElementById('passwordStrengthText');
-    
-    passwordInput.addEventListener('input', function() {
-        const password = this.value;
-        let strength = 0;
-        
-        if (password.length >= 12) strength += 25;
-        if (/[a-z]/.test(password)) strength += 25;
-        if (/[A-Z]/.test(password)) strength += 25;
-        if (/[0-9]/.test(password)) strength += 15;
-        if (/[^A-Za-z0-9]/.test(password)) strength += 10;
-        
-        strengthBar.style.width = strength + '%';
-        
-        if (strength < 50) {
-            strengthBar.className = 'progress-bar bg-danger';
-            strengthText.textContent = 'Weak password';
-        } else if (strength < 75) {
-            strengthBar.className = 'progress-bar bg-warning';
-            strengthText.textContent = 'Moderate password';
-        } else {
-            strengthBar.className = 'progress-bar bg-success';
-            strengthText.textContent = 'Strong password';
-        }
+
+    // Password strength
+    const pwd = document.getElementById('password');
+    const bar = document.getElementById('passwordStrengthBar');
+    const text = document.getElementById('passwordStrengthText');
+    pwd.addEventListener('input', () => {
+        const val = pwd.value;
+        let score = 0;
+        if (val.length >= 12) score += 25;
+        if (/[a-z]/.test(val)) score += 25;
+        if (/[A-Z]/.test(val)) score += 25;
+        if (/[0-9]/.test(val)) score += 15;
+        if (/[^A-Za-z0-9]/.test(val)) score += 10;
+        bar.style.width = score + '%';
+        if (score < 50) { bar.className = 'progress-bar bg-danger'; text.textContent = 'Weak'; }
+        else if (score < 75) { bar.className = 'progress-bar bg-warning'; text.textContent = 'Moderate'; }
+        else { bar.className = 'progress-bar bg-success'; text.textContent = 'Strong'; }
     });
-    
-    // Password confirmation validation
-    const confirmPasswordInput = document.getElementById('confirm_password');
-    const confirmFeedback = document.getElementById('confirmPasswordFeedback');
-    
-    function validatePasswordMatch() {
-        if (passwordInput.value !== confirmPasswordInput.value) {
-            confirmPasswordInput.classList.add('is-invalid');
-            confirmFeedback.style.display = 'block';
+
+    // Confirm password
+    const confirm = document.getElementById('confirm_password');
+    const feedback = document.getElementById('confirmPasswordFeedback');
+    const checkMatch = () => {
+        if (pwd.value !== confirm.value) {
+            confirm.classList.add('is-invalid');
+            feedback.style.display = 'block';
         } else {
-            confirmPasswordInput.classList.remove('is-invalid');
-            confirmFeedback.style.display = 'none';
+            confirm.classList.remove('is-invalid');
+            feedback.style.display = 'none';
         }
-    }
-    
-    passwordInput.addEventListener('input', validatePasswordMatch);
-    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
-    
-    // Form validation
+    };
+    pwd.addEventListener('input', checkMatch);
+    confirm.addEventListener('input', checkMatch);
+
+    // Form submit
     const form = document.getElementById('registerForm');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', e => {
         if (!form.checkValidity()) {
             e.preventDefault();
             e.stopPropagation();
         }
-        
         form.classList.add('was-validated');
-    });
-    
-    // Real-time validation
-    form.querySelectorAll('input').forEach(input => {
-        input.addEventListener('blur', function() {
-            this.classList.add('validated');
-        });
     });
 });
 </script>
-
-<style>
-.card {
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.card-header {
-    border-bottom: none;
-}
-
-.bg-gradient-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-}
-
-.input-group-text {
-    border-right: none;
-}
-
-.form-control {
-    border-left: none;
-}
-
-.form-control:focus {
-    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
-    border-color: #28a745;
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border: none;
-    transition: all 0.3s ease;
-}
-
-.btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-}
-
-.password-strength {
-    margin-top: 5px;
-}
-
-.toggle-password {
-    border-left: none;
-}
-
-.toggle-password:hover {
-    background-color: #e9ecef;
-}
-
-.form-check-input:checked {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .card-body {
-        padding: 2rem !important;
-    }
-    
-    .btn-lg {
-        padding: 0.75rem 1.5rem;
-    }
-}
-</style>
 {% endblock %}
