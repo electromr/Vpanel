@@ -3,63 +3,240 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Welcome to {{ panel_name }}</h1>
+<style>
+    .pve-welcome {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
 
-<div class="card mb-4 shadow">
-    <div class="card-header">
-        <h5>Your VPS Instances</h5>
-    </div>
-    <div class="card-body">
-        {% if vps_list %}
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Status</th>
-                        <th>Memory</th>
-                        <th>CPU</th>
-                        <th>Disk</th>
-                        <th>Expires At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vps in vps_list %}
-                    <tr>
-                        <td>{{ vps.vps_id }}</td>
-                        <td><span class="badge bg-{{ 'success' if vps.status == 'running' else 'danger' }}">{{ vps.status | capitalize }}</span></td>
-                        <td>{{ vps.memory }} GB</td>
-                        <td>{{ vps.cpu }} cores</td>
-                        <td>{{ vps.disk }} GB</td>
-                        <td>{{ vps.expires_at }}</td>
-                        <td>
-                            <a href="/vps/{{ vps.vps_id }}" class="btn btn-sm btn-primary">Details</a>
-                            <a href="/vps/{{ vps.vps_id }}/console" class="btn btn-sm btn-secondary">Console</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-body .table {
+        margin-bottom: 0;
+        color: var(--pve-text);
+        font-size: 0.9rem;
+    }
+
+    .pve-body .table th {
+        background-color: transparent;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 0.75rem 1rem;
+    }
+
+    .pve-body .table td {
+        padding: 0.75rem 1rem;
+        border-color: var(--pve-border);
+        vertical-align: middle;
+    }
+
+    .pve-body .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .pve-body .table-hover tbody tr:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    .badge.bg-success {
+        background-color: var(--pve-success) !important;
+    }
+
+    .badge.bg-danger {
+        background-color: var(--pve-danger) !important;
+    }
+
+    .pve-body .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        min-width: 70px;
+        transition: all 0.2s;
+    }
+
+    .pve-body .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-body .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-body .btn-secondary {
+        background-color: #5a5a5a;
+        border-color: #5a5a5a;
+        color: #e0e0e0;
+    }
+
+    .pve-body .btn-secondary:hover {
+        background-color: #4a4a4a;
+        border-color: #4a4a4a;
+    }
+
+    .pve-body .text-muted {
+        color: #777 !important;
+        font-style: italic;
+    }
+
+    .pve-body .list-group-item {
+        background-color: var(--pve-panel);
+        border-color: var(--pve-border);
+        color: var(--pve-text);
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .pve-body .list-group-item.list-group-item-info {
+        background-color: rgba(0, 122, 204, 0.1);
+        border-left: 3px solid var(--pve-accent);
+    }
+
+    .pve-body .list-group-item small {
+        color: var(--pve-text-muted);
+    }
+
+    .pve-body .empty-state {
+        color: #777;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .pve-welcome {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-body .table {
+            font-size: 0.85rem;
+        }
+        .pve-body .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .table-responsive {
+            border: none;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <h1 class="pve-welcome">Welcome to {{ panel_name }}</h1>
+
+    <!-- VPS List Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <h5>Your VPS Instances</h5>
         </div>
-        {% else %}
-        <p class="text-muted">No VPS instances yet. Contant Admin For Vps</a>.</p>
-        {% endif %}
+        <div class="pve-body">
+            {% if vps_list %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Status</th>
+                            <th>Memory</th>
+                            <th>CPU</th>
+                            <th>Disk</th>
+                            <th>Expires At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vps in vps_list %}
+                        <tr>
+                            <td><strong>{{ vps.vps_id }}</strong></td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if vps.status == 'running' else 'danger' }}">
+                                    {{ vps.status | capitalize }}
+                                </span>
+                            </td>
+                            <td>{{ vps.memory }} GB</td>
+                            <td>{{ vps.cpu }} cores</td>
+                            <td>{{ vps.disk }} GB</td>
+                            <td>{{ vps.expires_at }}</td>
+                            <td>
+                                <a href="/vps/{{ vps.vps_id }}" class="btn btn-sm btn-primary">Details</a>
+                                <a href="/vps/{{ vps.vps_id }}/console" class="btn btn-sm btn-secondary">Console</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="empty-state">
+                No VPS instances yet. Contact Admin for a VPS.
+            </p>
+            {% endif %}
+        </div>
     </div>
-</div>
 
-<div class="card shadow">
-    <div class="card-header">
-        <h5>Notifications</h5>
+    <!-- Notifications Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <h5>Notifications</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for notif in notifications %}
+            <li class="list-group-item {{ 'list-group-item-info' if not notif.read else '' }}">
+                {{ notif.message }}
+                <small class="text-muted">({{ notif.created_at }})</small>
+            </li>
+            {% else %}
+            <li class="list-group-item text-muted text-center">No notifications</li>
+            {% endfor %}
+        </ul>
     </div>
-    <ul class="list-group list-group-flush">
-        {% for notif in notifications %}
-        <li class="list-group-item {{ 'list-group-item-info' if not notif.read else '' }}">
-            {{ notif.message }} <small class="text-muted">({{ notif.created_at }})</small>
-        </li>
-        {% else %}
-        <li class="list-group-item text-muted">No notifications</li>
-        {% endfor %}
-    </ul>
 </div>
 {% endblock %}
