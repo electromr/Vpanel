@@ -3,50 +3,288 @@
 {% block title %}Users - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Users for VPS {{ vps.vps_id }}</h4>
-    </div>
-    <div class="card-body">
-        <form method="post" class="mb-3">
-            <div class="row">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="username" placeholder="Username" required>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .users-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.75rem;
+        color: var(--pve-text);
+    }
+
+    .pve-add-form {
+        background-color: #2a2a2a;
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-add-form .row {
+        row-gap: 1rem;
+    }
+
+    .pve-add-form .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-add-form .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+    }
+
+    .pve-add-form .form-control::placeholder {
+        color: #777;
+        font-style: italic;
+    }
+
+    .pve-add-form .btn {
+        border-radius: 4px;
+        font-weight: 600;
+        padding: 0.65rem 1.2rem;
+        min-width: 120px;
+        transition: all 0.2s;
+    }
+
+    .pve-add-form .btn-success {
+        background-color: var(--pve-success);
+        border-color: var(--pve-success);
+    }
+
+    .pve-add-form .btn-success:hover {
+        background-color: #0d8c5d;
+        border-color: #0d8c5d;
+    }
+
+    .pve-table {
+        margin: 0;
+        font-size: 0.9rem;
+        table-layout: auto;
+    }
+
+    .pve-table th {
+        background-color: transparent;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 0.75rem 1rem;
+    }
+
+    .pve-table td {
+        padding: 0.75rem 1rem;
+        border-color: var(--pve-border);
+        vertical-align: middle;
+    }
+
+    .pve-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .pve-table tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .pve-table tbody tr:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-table .username {
+        font-family: 'Courier New', monospace;
+        color: var(--pve-text);
+        font-weight: 500;
+    }
+
+    .pve-table .btn-group {
+        display: flex;
+        gap: 0.35rem;
+    }
+
+    .pve-table .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 70px;
+        transition: all 0.2s;
+    }
+
+    .pve-table .btn-danger {
+        background-color: var(--pve-danger);
+        border-color: var(--pve-danger);
+    }
+
+    .pve-table .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .pve-table .empty-state {
+        color: #777;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+            padding: 1rem;
+        }
+        .pve-header .users-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1.25rem;
+        }
+        .pve-add-form {
+            padding: 1rem;
+        }
+        .pve-add-form .col-md-4 {
+            margin-bottom: 0.75rem;
+        }
+        .pve-add-form .btn {
+            width: 100%;
+        }
+        .pve-table {
+            font-size: 0.85rem;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .pve-table th,
+        .pve-table td {
+            padding: 0.5rem 0.35rem;
+        }
+        .pve-table .btn {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.5rem;
+            min-width: 60px;
+        }
+        .pve-table .btn-group {
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="users-icon">People</div>
+            <div>Users for VPS {{ vps.vps_id }}</div>
+        </div>
+
+        <div class="pve-body">
+            <!-- Add User Form -->
+            <form method="post" class="pve-add-form">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <input type="text" 
+                               class="form-control" 
+                               name="username" 
+                               placeholder="Username" 
+                               required 
+                               maxlength="32">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="password" 
+                               class="form-control" 
+                               name="password" 
+                               placeholder="Password" 
+                               required 
+                               minlength="6">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" 
+                                name="action" 
+                                value="add" 
+                                class="btn btn-success w-100">
+                            Add User
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <input type="password" class="form-control" name="password" placeholder="Password" required>
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" name="action" value="add" class="btn btn-success">Add User</button>
-                </div>
+            </form>
+
+            <!-- Users Table -->
+            <div class="table-responsive">
+                <table class="table pve-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td class="username">{{ user }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="username" value="{{ user }}">
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" 
+                                                class="btn btn-sm btn-danger" 
+                                                onclick="return confirm('Permanently delete user \"{{ user }}\"?\n\nThis action cannot be undone.');">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="empty-state">No additional users</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </form>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>{{ user }}</td>
-                    <td>
-                        <form method="post" style="display:inline;">
-                            <input type="hidden" name="username" value="{{ user }}">
-                            <input type="hidden" name="action" value="delete">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete user?');">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="2" class="text-center">No users</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+            <div class="alert alert-info mt-3" role="alert">
+                <strong>Note:</strong> The <code>root</code> user is managed separately and cannot be deleted here.
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
