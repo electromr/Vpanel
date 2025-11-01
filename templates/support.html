@@ -1,38 +1,253 @@
 {% extends "base.html" %}
+
+{% block title %}Support Center{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Support Center</h2>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
 
-    <!-- Create Ticket Form -->
-    <form method="POST" class="card p-3 mb-4 shadow-sm">
-        <div class="mb-3">
-            <label for="subject" class="form-label">Subject</label>
-            <input type="text" id="subject" name="subject" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Create Ticket</button>
-    </form>
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
 
-    <!-- Ticket List -->
-    <h4>Your Tickets</h4>
-    {% if tickets %}
-        <div class="list-group">
-            {% for ticket in tickets %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ ticket.subject }}</strong><br>
-                        <small>{{ ticket.description }}</small><br>
+    .pve-header .support-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-body .form-label {
+        font-size: 0.9rem;
+        color: var(--pve-text-muted);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .pve-body .form-control,
+    .pve-body .form-control:focus {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-body .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+    }
+
+    .pve-body .form-control::placeholder {
+        color: #777;
+    }
+
+    .pve-body textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .pve-body .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        min-width: 140px;
+        transition: all 0.2s;
+    }
+
+    .pve-body .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-body .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-ticket-list {
+        margin: 0;
+        padding: 0;
+    }
+
+    .pve-ticket-list .list-group-item {
+        background-color: #2a2a2a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        transition: background-color 0.2s;
+    }
+
+    .pve-ticket-list .list-group-item:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-ticket-list .list-group-item + .list-group-item {
+        border-top: none;
+    }
+
+    .pve-ticket-list .ticket-content {
+        flex: 1;
+    }
+
+    .pve-ticket-list .ticket-content strong {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .pve-ticket-list .ticket-content small {
+        color: #cccccc;
+        display: block;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .pve-ticket-list .badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .pve-ticket-list .badge.bg-info {
+        background-color: #17a2b8 !important;
+        color: #ffffff;
+    }
+
+    .pve-ticket-list .ticket-time {
+        color: #888;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        margin-left: 1rem;
+        text-align: right;
+    }
+
+    .pve-empty {
+        color: #777;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+        font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-body .btn {
+            width: 100%;
+        }
+        .pve-ticket-list .list-group-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        .pve-ticket-list .ticket-time {
+            margin-left: 0;
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+
+    <!-- Create Ticket Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="support-icon">Support</div>
+            <div>Create Support Ticket</div>
+        </div>
+        <div class="pve-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Subject</label>
+                    <input type="text" 
+                           id="subject" 
+                           name="subject" 
+                           class="form-control" 
+                           placeholder="Briefly describe your issue" 
+                           required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" 
+                              name="description" 
+                              class="form-control" 
+                              rows="5" 
+                              placeholder="Provide detailed information about your issue..." 
+                              required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Create Ticket
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ticket List Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="support-icon">Ticket</div>
+            <div>Your Support Tickets</div>
+        </div>
+        <div class="pve-body">
+            {% if tickets %}
+            <div class="list-group pve-ticket-list">
+                {% for ticket in tickets %}
+                <div class="list-group-item">
+                    <div class="ticket-content">
+                        <strong>{{ ticket.subject }}</strong>
+                        <small>{{ ticket.description }}</small>
                         <span class="badge bg-info">{{ ticket.status }}</span>
                     </div>
-                    <small class="text-muted">{{ ticket.created_at }}</small>
+                    <div class="ticket-time">
+                        {{ ticket.created_at }}
+                    </div>
                 </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="pve-empty">You have not created any tickets yet.</p>
+            {% endif %}
         </div>
-    {% else %}
-        <p class="text-muted">You have not created any tickets yet.</p>
-    {% endif %}
+    </div>
+
 </div>
 {% endblock %}
