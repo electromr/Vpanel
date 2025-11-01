@@ -3,14 +3,215 @@
 {% block title %}Referral{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>Referral Program</h4>
-    </div>
-    <div class="card-body">
-        <p>Your Referral Code: <code>{{ code }}</code></p>
-        <p>Referred Users: {{ referred }}</p>
-        <p>Share your code to earn rewards!</p>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 700px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .gift-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-referral-code {
+        background-color: #1e1e1e;
+        border: 1px solid var(--pve-border);
+        border-radius: 4px;
+        padding: 1rem 1.25rem;
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--pve-accent);
+        text-align: center;
+        margin: 1.5rem 0;
+        word-break: break-all;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .pve-referral-code:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+    }
+
+    .pve-referral-code .copy-btn {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--pve-accent);
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        transition: all 0.2s;
+    }
+
+    .pve-referral-code .copy-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+
+    .pve-stats {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background-color: rgba(255, 255, 255, 0.02);
+        border-radius: 4px;
+        border: 1px solid var(--pve-border);
+    }
+
+    .pve-stat {
+        text-align: center;
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .pve-stat .value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 0.25rem;
+    }
+
+    .pve-stat .label {
+        font-size: 0.85rem;
+        color: var(--pve-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pve-share {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 1rem;
+        color: #cccccc;
+    }
+
+    .pve-share a {
+        color: var(--pve-accent);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .pve-share a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .gift-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-referral-code {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+        .pve-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .pve-stat .value {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="gift-icon">Gift</div>
+            <div>Referral Program</div>
+        </div>
+
+        <div class="pve-body">
+            <!-- Referral Code -->
+            <div class="pve-referral-code" id="referralCode">
+                {{ code }}
+                <button class="copy-btn" onclick="copyReferralCode()" title="Copy to clipboard">
+                    Copy
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="pve-stats">
+                <div class="pve-stat">
+                    <div class="value">{{ referred }}</div>
+                    <div class="label">Referred Users</div>
+                </div>
+                <div class="pve-stat">
+                    <div class="value">+{{ referred * 5 }} GB</div>
+                    <div class="label">Bonus Disk</div>
+                </div>
+            </div>
+
+            <!-- Share Message -->
+            <div class="pve-share">
+                <p>Share your code to earn <strong>5 GB extra disk</strong> per successful referral!</p>
+                <p>
+                    Invite friends via 
+                    <a href="mailto:?subject=Join {{ panel_name }}&body=Use my referral code: {{ code }}">Email</a> • 
+                    <a href="https://twitter.com/intent/tweet?text=Join {{ panel_name }} and get extra resources! Use code: {{ code }}" target="_blank">Twitter</a> • 
+                    <a href="https://t.me/share/url?url={{ request.url }}&text=Use code {{ code }} to join {{ panel_name }}!" target="_blank">Telegram</a>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+function copyReferralCode() {
+    const code = document.getElementById('referralCode').innerText.trim();
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const original = btn.innerHTML;
+        btn.innerHTML = 'Copied!';
+        btn.style.color = '#28a745';
+        setTimeout(() => {
+            btn.innerHTML = original;
+            btn.style.color = '';
+        }, 1500);
+    });
+}
+</script>
 {% endblock %}
