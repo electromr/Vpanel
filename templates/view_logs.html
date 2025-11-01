@@ -3,19 +3,193 @@
 {% block title %}View Logs - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header">
-        <h4>View Logs for VPS {{ vps.vps_id }}</h4>
-    </div>
-    <div class="card-body">
-        <form method="post" class="mb-3">
-            <div class="input-group">
-                <input type="text" class="form-control" name="log_path" value="{{ log_path }}" placeholder="/var/log/syslog" required>
-                <input type="text" class="form-control" name="search_term" placeholder="Search term">
-                <button type="submit" class="btn btn-primary">View</button>
-            </div>
-        </form>
-        <pre class="bg-light p-3 border overflow-auto" style="max-height: 500px;">{{ logs }}</pre>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1000px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .log-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-log-form {
+        margin-bottom: 1.5rem;
+    }
+
+    .pve-log-form .input-group {
+        max-width: 100%;
+    }
+
+    .pve-log-form .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px 0 0 4px;
+        padding: 0.65rem 0.75rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .pve-log-form .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+        color: var(--pve-text);
+    }
+
+    .pve-log-form .form-control::placeholder {
+        color: #777;
+        font-style: italic;
+    }
+
+    .pve-log-form .form-control + .form-control {
+        border-left: none;
+        border-radius: 0;
+    }
+
+    .pve-log-form .form-control:last-child {
+        border-radius: 0 4px 4px 0;
+    }
+
+    .pve-log-form .btn {
+        border-radius: 0 4px 4px 0;
+        font-weight: 500;
+        padding: 0.65rem 1.2rem;
+        font-size: 0.9rem;
+        min-width: 100px;
+        transition: all 0.2s;
+    }
+
+    .pve-log-form .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-log-form .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-log-output {
+        background-color: #1e1e1e;
+        color: #dcdcdc;
+        border: 1px solid var(--pve-border);
+        border-radius: 4px;
+        padding: 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        max-height: 600px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 0;
+        box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
+    }
+
+    .pve-log-output:empty::before {
+        content: "No log output. Enter a path and click 'View' to load logs.";
+        color: #666;
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        .pve-header .log-icon {
+            font-size: 1.1rem;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-log-form .input-group {
+            flex-direction: column;
+        }
+        .pve-log-form .form-control {
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .pve-log-form .form-control + .form-control {
+            border-left: 1px solid var(--pve-border);
+            border-radius: 4px;
+        }
+        .pve-log-form .btn {
+            border-radius: 4px;
+            width: 100%;
+        }
+        .pve-log-output {
+            font-size: 0.85rem;
+            padding: 0.75rem;
+            max-height: 400px;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="log-icon">File Text</div>
+            <div>View Logs for VPS {{ vps.vps_id }}</div>
+        </div>
+
+        <div class="pve-body">
+            <!-- Log Path & Search Form -->
+            <form method="post" class="pve-log-form">
+                <div class="input-group">
+                    <input type="text" 
+                           class="form-control" 
+                           name="log_path" 
+                           value="{{ log_path }}" 
+                           placeholder="/var/log/syslog" 
+                           required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="search_term" 
+                           placeholder="grep filter (optional)">
+                    <button type="submit" class="btn btn-primary">
+                        View
+                    </button>
+                </div>
+                <small class="text-muted d-block mt-2">
+                    Common paths: <code>/var/log/syslog</code>, <code>/var/log/auth.log</code>, <code>/var/log/apache2/access.log</code>
+                </small>
+            </form>
+
+            <!-- Log Output -->
+            <pre class="pve-log-output">{{ logs }}</pre>
+        </div>
     </div>
 </div>
 {% endblock %}
