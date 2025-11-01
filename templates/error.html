@@ -1,24 +1,127 @@
 {% extends "base.html" %}
 
 {% block title %}Error - {{ panel_name }}{% endblock %}
-{% block page_title %}Error{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 text-center">
-        <div class="card">
-            <div class="card-body py-5">
-                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                <h3>Oops! Something went wrong</h3>
-                <p class="text-muted">{{ error }}</p>
-                <div class="mt-4">
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary me-2">
-                        <i class="fas fa-home me-1"></i>Back to Dashboard
-                    </a>
-                    <a href="javascript:history.back()" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>Go Back
-                    </a>
-                </div>
+<style>
+    .pve-error-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 600px;
+        margin: 3rem auto;
+    }
+
+    .pve-error-body {
+        padding: 3rem 1.5rem;
+        text-align: center;
+        color: var(--pve-text);
+    }
+
+    .pve-error-icon {
+        font-size: 3.5rem;
+        color: var(--pve-warning);
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .pve-error-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 0.75rem;
+    }
+
+    .pve-error-message {
+        color: #cccccc;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .pve-error-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pve-error-actions .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        min-width: 160px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .pve-error-actions .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-error-actions .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-error-actions .btn-outline-secondary {
+        background: transparent;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text-muted);
+    }
+
+    .pve-error-actions .btn-outline-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--pve-text);
+        border-color: var(--pve-accent);
+    }
+
+    @media (max-width: 768px) {
+        .pve-error-card {
+            margin: 1.5rem;
+            border-radius: 4px;
+        }
+        .pve-error-body {
+            padding: 2rem 1rem;
+        }
+        .pve-error-icon {
+            font-size: 3rem;
+        }
+        .pve-error-title {
+            font-size: 1.5rem;
+        }
+        .pve-error-actions {
+            flex-direction: column;
+        }
+        .pve-error-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-5">
+    <div class="pve-error-card">
+        <div class="pve-error-body">
+            <div class="pve-error-icon">
+                Warning
+            </div>
+            <h3 class="pve-error-title">Oops! Something went wrong</h3>
+            <p class="pve-error-message">
+                {{ error }}
+            </p>
+            <div class="pve-error-actions">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    Home Dashboard
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    Back
+                </a>
             </div>
         </div>
     </div>
