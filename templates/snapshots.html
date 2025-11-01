@@ -3,47 +3,320 @@
 {% block title %}Snapshots - {{ vps.vps_id }}{% endblock %}
 
 {% block content %}
-<div class="card shadow">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h4>Snapshots for VPS {{ vps.vps_id }}</h4>
-        <form method="post" action="/vps/{{ vps.vps_id }}/snapshot/create" class="d-flex">
-            <input type="text" class="form-control me-2" name="name" placeholder="Snapshot Name">
-            <input type="text" class="form-control me-2" name="description" placeholder="Description">
-            <button type="submit" class="btn btn-primary">Create Snapshot</button>
-        </form>
-    </div>
-    <div class="card-body">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Created At</th>
-                    <th>Description</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for snap in snapshots %}
-                <tr>
-                    <td>{{ snap.snapshot_name }}</td>
-                    <td>{{ snap.created_at }}</td>
-                    <td>{{ snap.description }}</td>
-                    <td>
-                        <form method="post" action="/vps/{{ vps.vps_id }}/snapshot/{{ snap.id }}/restore" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Restore?');">Restore</button>
-                        </form>
-                        <form method="post" action="/vps/{{ vps.vps_id }}/snapshot/{{ snap.id }}/delete" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?');">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="text-center">No snapshots</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<style>
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 1100px;
+        margin: 2rem auto;
+    }
+
+    .pve-header {
+        background-color: var(--pve-header);
+        border-bottom: 1px solid var(--pve-border);
+        padding: 1rem 1.5rem;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.3rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .pve-header .title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .pve-header .snapshot-icon {
+        font-size: 1.2rem;
+        color: var(--pve-accent);
+    }
+
+    .pve-header .create-form {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex: 1;
+        max-width: 600px;
+    }
+
+    .pve-header .create-form .form-control {
+        background-color: #3a3a3a;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        min-width: 120px;
+    }
+
+    .pve-header .create-form .form-control:focus {
+        border-color: var(--pve-accent);
+        box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+        background-color: #3a3a3a;
+    }
+
+    .pve-header .create-form .form-control::placeholder {
+        color: #777;
+        font-style: italic;
+    }
+
+    .pve-header .create-form .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        min-width: 100px;
+    }
+
+    .pve-header .create-form .btn-primary {
+        background-color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-header .create-form .btn-primary:hover {
+        background-color: var(--pve-accent-hover);
+        border-color: var(--pve-accent-hover);
+    }
+
+    .pve-body {
+        padding: 1.5rem;
+        color: var(--pve-text);
+    }
+
+    .pve-table {
+        margin: 0;
+        font-size: 0.9rem;
+        table-layout: auto;
+    }
+
+    .pve-table th {
+        background-color: transparent;
+        color: #cccccc;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--pve-border);
+        padding: 0.75rem 1rem;
+    }
+
+    .pve-table td {
+        padding: 0.75rem 1rem;
+        border-color: var(--pve-border);
+        vertical-align: middle;
+    }
+
+    .pve-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .pve-table tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .pve-table tbody tr:hover {
+        background-color: rgba(0, 122, 204, 0.1);
+    }
+
+    .pve-table .snapshot-name {
+        font-family: 'Courier New', monospace;
+        color: var(--pve-text);
+        font-weight: 500;
+    }
+
+    .pve-table .snapshot-time {
+        color: #aaaaaa;
+        font-size: 0.85rem;
+    }
+
+    .pve-table .description {
+        color: #cccccc;
+        font-size: 0.9rem;
+        word-break: break-word;
+    }
+
+    .pve-table .btn-group {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+
+    .pve-table .btn {
+        border-radius: 4px;
+        font-weight: 500;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 70px;
+        transition: all 0.2s;
+    }
+
+    .pve-table .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+    }
+
+    .pve-table .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+        color: #212529;
+    }
+
+    .pve-table .btn-danger {
+        background-color: var(--pve-danger);
+        border-color: var(--pve-danger);
+    }
+
+    .pve-table .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+
+    .pve-table .empty-state {
+        color: #777;
+        font-style: italic;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    @media (max-width: 992px) {
+        .pve-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .pve-header .create-form {
+            max-width: none;
+            margin-top: 0.75rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pve-card {
+            margin: 1rem;
+            border-radius: 4px;
+        }
+        .pve-header {
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+        .pve-header .snapshot-icon {
+            font-size: 1.1rem;
+        }
+        .pve-header .create-form {
+            flex-direction: column;
+        }
+        .pve-header .create-form .form-control,
+        .pve-header .create-form .btn {
+            width: 100%;
+        }
+        .pve-body {
+            padding: 1rem;
+        }
+        .pve-table {
+            font-size: 0.85rem;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .pve-table th,
+        .pve-table td {
+            padding: 0.5rem 0.35rem;
+        }
+        .pve-table .btn {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.5rem;
+            min-width: 60px;
+        }
+        .pve-table .btn-group {
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="title">
+                <div class="snapshot-icon">Camera</div>
+                <div>Snapshots for VPS {{ vps.vps_id }}</div>
+            </div>
+
+            <form method="post" action="/vps/{{ vps.vps_id }}/snapshot/create" class="create-form">
+                <input type="text" 
+                       class="form-control" 
+                       name="name" 
+                       placeholder="Snapshot Name" 
+                       required 
+                       maxlength="50">
+                <input type="text" 
+                       class="form-control" 
+                       name="description" 
+                       placeholder="Description (optional)">
+                <button type="submit" class="btn btn-primary">
+                    Create Snapshot
+                </button>
+            </form>
+        </div>
+
+        <div class="pve-body">
+            <div class="table-responsive">
+                <table class="table pve-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Created At</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for snap in snapshots %}
+                        <tr>
+                            <td class="snapshot-name">{{ snap.snapshot_name }}</td>
+                            <td class="snapshot-time">{{ snap.created_at }}</td>
+                            <td class="description">{{ snap.description or '—' }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <form method="post" 
+                                          action="/vps/{{ vps.vps_id }}/snapshot/{{ snap.id }}/restore" 
+                                          style="display:inline;">
+                                        <button type="submit" 
+                                                class="btn btn-sm btn-warning" 
+                                                onclick="return confirm('Restore snapshot \"{{ snap.snapshot_name }}\"?\n\nThis will revert the VPS to this state.');">
+                                            Restore
+                                        </button>
+                                    </form>
+                                    <form method="post" 
+                                          action="/vps/{{ vps.vps_id }}/snapshot/{{ snap.id }}/delete" 
+                                          style="display:inline;">
+                                        <button type="submit" 
+                                                class="btn btn-sm btn-danger" 
+                                                onclick="return confirm('Permanently delete snapshot \"{{ snap.snapshot_name }}\"?\n\nThis action cannot be undone.');">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="empty-state">No snapshots created yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
