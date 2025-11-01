@@ -6,65 +6,237 @@
   <title>{{ panel_name }} - SSH Console</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
   <style>
-    :root{
-      --bg:#0b0b0d; --panel:#0f1720; --muted:#9aa4b2; --accent:#06b6d4; --danger:#ef4444;
-      --radius:12px; --gap:12px; --header-h:64px;
-      --touch:18px;
+    :root {
+      --pve-bg: #1a1a1a;
+      --pve-panel: #2a2a2a;
+      --pve-header: #0f0f0f;
+      --pve-border: #404040;
+      --pve-text: #e0e0e0;
+      --pve-text-muted: #a0a0a0;
+      --pve-accent: #007acc;
+      --pve-accent-hover: #005a99;
+      --pve-success: #28a745;
+      --pve-danger: #dc3545;
+      --pve-warning: #ffc107;
+      --radius: 6px;
+      --gap: 12px;
+      --header-h: 64px;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#e6eef6;background:linear-gradient(180deg,#061018 0%, #071223 100%)}
 
-    .app{display:flex;flex-direction:column;height:100vh;padding:12px;gap:12px}
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%; margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--pve-bg);
+      color: var(--pve-text);
+    }
 
-    /* header */
-    header{height:var(--header-h);display:flex;align-items:center;gap:12px}
-    .back-btn{appearance:none;border:0;background:transparent;color:var(--muted);font-size:20px;padding:8px 12px;border-radius:10px;cursor:pointer}
-    .back-btn:active{transform:translateY(1px)}
-    .title{flex:1;font-weight:600;font-size:16px}
-    .status{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
-    .status .dot{width:10px;height:10px;border-radius:999px;background:#374151}
-    .status.connected .dot{background: #10b981}
-    .status.connecting .dot{background: #f59e0b}
-    .status.error .dot{background: var(--danger)}
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: var(--gap);
+      gap: var(--gap);
+    }
 
-    /* controls panel */
-    .panel{background:rgba(255,255,255,0.02);padding:12px;border-radius:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    .panel .field{display:flex;flex-direction:column;flex:1;min-width:120px}
-    label{font-size:12px;color:var(--muted);margin-bottom:6px}
-    input,select{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:14px}
-    .actions{display:flex;gap:8px}
-    button.primary{background:linear-gradient(90deg,var(--accent),#7dd3fc);border:0;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer}
-    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:10px;color:var(--muted);cursor:pointer}
+    /* Header */
+    header {
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: var(--gap);
+      padding: 0 0.5rem;
+      background-color: var(--pve-panel);
+      border: 1px solid var(--pve-border);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
 
-    /* terminal container */
-    #term-wrap{flex:1;min-height:200px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column}
-    #terminal{flex:1;min-height:150px;background:#000;height:calc(100vh - var(--header-h) - 220px)}
+    .back-btn {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--pve-text-muted);
+      font-size: 1.4rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
 
-    /* mobile tweaks */
-    @media (max-width:720px){
-      header{gap:8px}
-      .title{font-size:15px}
-      .panel{padding:10px}
-      input{padding:12px;font-size:16px}
-      #terminal{height:calc(100vh - var(--header-h) - 200px)}
+    .back-btn:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .back-btn:active {
+      transform: translateY(1px);
+    }
+
+    .title {
+      flex: 1;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #ffffff;
+    }
+
+    .status {
+      font-size: 0.85rem;
+      color: var(--pve-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #6c757d;
+    }
+
+    .status.connected .dot { background: var(--pve-success); }
+    .status.connecting .dot { background: var(--pve-warning); }
+    .status.error .dot { background: var(--pve-danger); }
+
+    /* Controls Panel */
+    .panel {
+      background-color: var(--pve-panel);
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--pve-border);
+      display: flex;
+      gap: var(--gap);
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .panel .field {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--pve-text-muted);
+      margin-bottom: 0.35rem;
+      font-weight: 500;
+    }
+
+    input, select {
+      padding: 0.65rem 0.75rem;
+      border-radius: 4px;
+      border: 1px solid var(--pve-border);
+      background-color: #3a3a3a;
+      color: var(--pve-text);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--pve-accent);
+      box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.25);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button.primary {
+      background-color: var(--pve-accent);
+      border: none;
+      color: white;
+      padding: 0.65rem 1rem;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 100px;
+    }
+
+    button.primary:hover {
+      background-color: var(--pve-accent-hover);
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 1px solid var(--pve-border);
+      color: var(--pve-text-muted);
+      padding: 0.65rem 1rem;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button.ghost:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--pve-text);
+    }
+
+    /* Terminal Container */
+    #term-wrap {
+      flex: 1;
+      min-height: 200px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--pve-border);
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    #terminal {
+      flex: 1;
+      min-height: 150px;
+      background: #000;
+      height: calc(100vh - var(--header-h) - 220px);
+    }
+
+    /* Hint */
+    .hint {
+      color: var(--pve-text-muted);
+      text-align: center;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Mobile Tweaks */
+    @media (max-width: 768px) {
+      .app { padding: 0.75rem; }
+      header { gap: 0.5rem; padding: 0 0.5rem; }
+      .title { font-size: 1rem; }
+      .panel { padding: 0.75rem; }
+      input, select { padding: 0.75rem; font-size: 1rem; }
+      .actions { flex-direction: column; width: 100%; }
+      button.primary, button.ghost { width: 100%; }
+      #terminal { height: calc(100vh - var(--header-h) - 210px); }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <button class="back-btn" id="backBtn" aria-label="Go back">← Back</button>
-      <div class="title">🔐 SSH Console — VPS {{ vps.vps_id }}</div>
-      <div id="status" class="status"> <span class="dot"></span> <span id="statusText">Not connected</span> </div>
+      <button class="back-btn" id="backBtn" aria-label="Go back">Back</button>
+      <div class="title">SSH Console — VPS {{ vps.vps_id }}</div>
+      <div id="status" class="status">
+        <span class="dot"></span>
+        <span id="statusText">Not connected</span>
+      </div>
     </header>
 
     <section class="panel" aria-labelledby="connectForm">
       <div class="field">
         <label for="host">Host / IP</label>
-        <input id="host" name="host" placeholder="eg. 1.2.3.4 or example.com" value="127.0.0.1" inputmode="text" autocomplete="off" />
+        <input id="host" name="host" placeholder="e.g. 1.2.3.4" value="127.0.0.1" inputmode="text" autocomplete="off" />
       </div>
 
-      <div class="field" style="max-width:120px">
+      <div class="field" style="max-width: 100px;">
         <label for="port">Port</label>
         <input id="port" name="port" type="number" placeholder="22" value="22" min="1" max="65535" />
       </div>
@@ -76,7 +248,7 @@
 
       <div class="field">
         <label for="password">Password / Key</label>
-        <input id="password" name="password" type="password" placeholder="SSH password or private key" autocomplete="current-password" />
+        <input id="password" name="password" type="password" placeholder="SSH password" autocomplete="current-password" />
       </div>
 
       <div class="actions">
@@ -89,93 +261,91 @@
       <div id="terminal" role="region" aria-label="SSH terminal"></div>
     </div>
 
-    <small style="color:var(--muted);text-align:center">Tip: On mobile rotate to landscape for a larger terminal. Use the Back button to return to the previous page.</small>
+    <div class="hint">
+      Tip: On mobile, rotate to landscape for a larger terminal. Use the Back button to return.
+    </div>
   </div>
 
-  <!-- scripts -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script>
-    // basic DOM refs
     const backBtn = document.getElementById('backBtn');
     const connectBtn = document.getElementById('connectBtn');
     const disconnectBtn = document.getElementById('disconnectBtn');
     const statusEl = document.getElementById('status');
     const statusText = document.getElementById('statusText');
 
-    backBtn.addEventListener('click', ()=>{ try{ history.back(); }catch(e){ window.location.href = '/'; } });
+    backBtn.addEventListener('click', () => {
+      try { history.back(); } catch(e) { window.location.href = '/'; }
+    });
 
-    // socket
-    const socket = io(); // make sure server serves socket.io
+    const socket = io();
 
-    // xterm + fit
-    const term = new Terminal({ cursorBlink:true, rows:24, fontSize:14 });
+    const term = new Terminal({
+      cursorBlink: true,
+      rows: 24,
+      fontSize: 14,
+      theme: {
+        background: '#000000',
+        foreground: '#e0e0e0',
+        cursor: '#007acc',
+        selection: 'rgba(0, 122, 204, 0.3)'
+      }
+    });
     const fitAddon = new FitAddon.FitAddon();
     term.loadAddon(fitAddon);
     term.open(document.getElementById('terminal'));
-    function fit(){ try{ fitAddon.fit(); }catch(e){} }
-    window.addEventListener('resize', fit);
-    // initial fit after a short delay so CSS has applied
-    setTimeout(fit,200);
 
-    // helpers
-    function setStatus(state, text){
-      statusEl.classList.remove('connected','connecting','error');
-      statusEl.classList.add(state);
+    function fit() { try { fitAddon.fit(); } catch(e) {} }
+    window.addEventListener('resize', fit);
+    setTimeout(fit, 200);
+
+    function setStatus(state, text) {
+      statusEl.className = 'status ' + state;
       statusText.textContent = text;
     }
 
-    // connection flow
     let connected = false;
-    connectBtn.addEventListener('click', async (e)=>{
+    connectBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      if(connected) return;
+      if (connected) return;
 
       const host = document.getElementById('host').value.trim();
       const port = parseInt(document.getElementById('port').value) || 22;
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
 
-      if(!host || !username){
-        setStatus('error','Host and username required');
+      if (!host || !username) {
+        setStatus('error', 'Host and username required');
         return;
       }
 
-      setStatus('connecting','Connecting...');
+      setStatus('connecting', 'Connecting...');
       connectBtn.disabled = true;
 
-      // emit connect request to server
       socket.emit('ssh_connect', { host, port, username, password, vps_id: '{{ vps.vps_id }}' });
     });
 
-    disconnectBtn.addEventListener('click', (e)=>{
+    disconnectBtn.addEventListener('click', (e) => {
       e.preventDefault();
       socket.emit('ssh_disconnect');
     });
 
-    // terminal <-> socket
-    term.onData(data => {
-      socket.emit('ssh_input', data);
-    });
+    term.onData(data => socket.emit('ssh_input', data));
+    socket.on('ssh_output', data => { term.write(data); fit(); });
 
-    // server -> terminal
-    socket.on('ssh_output', data => {
-      term.write(data);
-      fit();
-    });
-
-    // status events from server
-    socket.on('ssh_connecting', ()=> setStatus('connecting','Connecting...'));
-    socket.on('ssh_connected', ()=>{
+    socket.on('ssh_connecting', () => setStatus('connecting', 'Connecting...'));
+    socket.on('ssh_connected', () => {
       connected = true;
-      setStatus('connected','Connected');
+      setStatus('connected', 'Connected');
       connectBtn.style.display = 'none';
       disconnectBtn.style.display = 'inline-block';
       connectBtn.disabled = false;
       fit();
     });
-    socket.on('ssh_disconnected', ()=>{
+    socket.on('ssh_disconnected', () => {
       connected = false;
       setStatus('', 'Not connected');
       disconnectBtn.style.display = 'none';
@@ -189,17 +359,15 @@
       disconnectBtn.style.display = 'none';
     });
 
-    // Show server connection state
-    socket.on('connect', ()=> setStatus('', 'Socket connected (idle)'));
-    socket.on('disconnect', ()=> setStatus('error','Socket disconnected'));
+    socket.on('connect', () => setStatus('', 'Ready'));
+    socket.on('disconnect', () => setStatus('error', 'Socket disconnected'));
 
-    // accessibility: allow pressing Enter on password to connect
-    document.getElementById('password').addEventListener('keydown', (ev)=>{
-      if(ev.key === 'Enter') connectBtn.click();
+    document.getElementById('password').addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') connectBtn.click();
     });
 
-    // initial hint fit
-    term.writeln('\x1b[1;30mWelcome to the web SSH console.\x1b[0m');
+    term.writeln('\x1b[1;36mProxmox Web SSH Console\x1b[0m');
+    term.writeln('\x1b[90mType your credentials and press Connect.\x1b[0m');
   </script>
 </body>
 </html>
