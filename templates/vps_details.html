@@ -4,128 +4,316 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 <style>
-    /* Custom styles for better UI/UX */
-    .card {
-        border: none;
-        border-radius: 12px;
+    :root {
+        --pve-panel: #1a1a1a;
+        --pve-header: #1e293b;
+        --pve-border: #334155;
+        --pve-text: #e2e8f0;
+        --pve-text-muted: #94a3b8;
+        --pve-accent: #0ea5e9;
+        --pve-success: #10b981;
+        --pve-warning: #f59e0b;
+        --pve-danger: #ef4444;
+        --pve-info: #06b6d4;
+    }
+
+    .pve-card {
+        background-color: var(--pve-panel);
+        border: 1px solid var(--pve-border);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         overflow: hidden;
+        margin-bottom: 1.5rem;
     }
-    
-    .card-header {
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+
+    .pve-header {
+        background: linear-gradient(135deg, var(--pve-accent), #0284c7);
+        color: #ffffff;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
     }
-    
-    .status-badge {
-        font-size: 0.85rem;
-        padding: 0.5rem 1rem;
+
+    .pve-header .title-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .pve-header .title-group i {
+        font-size: 1.5rem;
+    }
+
+    .pve-header h4 {
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+    .pve-header small {
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+
+    .pve-header .status-badge {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.9rem;
         border-radius: 20px;
-    }
-    
-    .btn-group {
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
     }
-    
-    .btn {
-        border-radius: 8px;
-        transition: all 0.3s ease;
+
+    .pve-header .status-badge.success { background-color: rgba(16, 185, 129, 0.3); }
+    .pve-header .status-badge.danger { background-color: rgba(239, 68, 68, 0.3); }
+    .pve-header .status-badge.warning { background-color: rgba(245, 158, 11, 0.3); }
+
+    .pve-body {
+        padding: 1.75rem;
+        color: var(--pve-text);
     }
-    
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .info-grid {
+
+    .pve-info-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
     }
-    
-    .info-item {
-        background: #22221d;
-        border-radius: 8px;
-        padding: 1rem;
-        border-left: 4px solid #0d6efd;
+
+    .pve-info-item {
+        background-color: #2d2d2d;
+        border-left: 4px solid var(--pve-accent);
+        border-radius: 0 6px 6px 0;
+        padding: 1rem 1.25rem;
+        transition: all 0.2s;
     }
-    
-    .info-item dt {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 0.25rem;
+
+    .pve-info-item:hover {
+        background-color: #333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
-    
-    .info-item dd {
+
+    .pve-info-item dt {
+        font-size: 0.8rem;
+        color: var(--pve-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .pve-info-item dd {
+        margin: 0;
         font-size: 1.1rem;
         font-weight: 500;
-        margin-bottom: 0;
+        color: #ffffff;
         word-break: break-all;
     }
-    
-    .copy-btn {
+
+    .pve-info-item dd code {
+        background-color: #1a1a1a;
+        color: var(--pve-accent);
+        padding: 0.35rem 0.6rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border: 1px solid var(--pve-border);
+        display: inline-block;
+    }
+
+    .pve-info-item .badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+
+    .pve-info-item .copy-btn {
+        background: transparent;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text-muted);
         padding: 0.25rem 0.5rem;
         font-size: 0.75rem;
+        border-radius: 4px;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
     }
-    
-    .action-buttons {
+
+    .pve-info-item .copy-btn:hover {
+        background-color: rgba(14, 165, 233, 0.1);
+        color: var(--pve-accent);
+        border-color: var(--pve-accent);
+    }
+
+    .pve-action-buttons {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.75rem;
         justify-content: center;
+        margin: 1.5rem 0;
+        padding: 1rem 0;
+        border-top: 1px solid var(--pve-border);
+        border-bottom: 1px solid var(--pve-border);
     }
-    
-    .utility-buttons {
+
+    .pve-action-buttons .btn {
+        min-width: 120px;
+        font-weight: 600;
+        padding: 0.65rem 1.2rem;
+        border-radius: 6px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .pve-action-buttons .btn-success { background-color: var(--pve-success); border: none; }
+    .pve-action-buttons .btn-warning { background-color: var(--pve-warning); border: none; color: #000; }
+    .pve-action-buttons .btn-info { background-color: var(--pve-info); border: none; }
+    .pve-action-buttons .btn-dark { background-color: #334155; border: none; }
+    .pve-action-buttons .btn-primary { background-color: var(--pve-accent); border: none; }
+
+    .pve-action-buttons .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .pve-utility-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 0.5rem;
+        gap: 0.75rem;
         margin-top: 1rem;
     }
-    
-    @media (max-width: 768px) {
-        .info-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .utility-buttons {
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        }
-        
-        .action-buttons .btn {
-            flex: 1;
-            min-width: 120px;
-        }
+
+    .pve-utility-grid .btn {
+        background-color: transparent;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text-muted);
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
     }
-    
-    /* Toast notification */
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1055;
+
+    .pve-utility-grid .btn i {
+        font-size: 1.3rem;
     }
-    
-    .toast {
-        background: #28a745;
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+    .pve-utility-grid .btn:hover {
+        background-color: rgba(14, 165, 233, 0.1);
+        color: var(--pve-accent);
+        border-color: var(--pve-accent);
+        transform: translateY(-2px);
     }
-    
-    /* Chart improvements */
+
+    .pve-chart-header {
+        background: linear-gradient(135deg, #334155, #1e293b);
+        color: #ffffff;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pve-chart-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pve-chart-header select {
+        background-color: #2d2d2d;
+        border: 1px solid var(--pve-border);
+        color: var(--pve-text);
+        padding: 0.4rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .pve-chart-body {
+        padding: 1.5rem;
+        background-color: #1a1a1a;
+    }
+
     .chart-container {
         position: relative;
         height: 300px;
         width: 100%;
     }
-    
-    /* Loading states */
-    .loading {
-        opacity: 0.7;
-        pointer-events: none;
+
+    .pve-toast-container {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        z-index: 1100;
     }
-    
-    .spinner-border-sm {
-        width: 1rem;
-        height: 1rem;
+
+    .pve-toast {
+        background-color: var(--pve-success);
+        color: white;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        min-width: 240px;
+    }
+
+    .pve-toast .btn-close {
+        margin-left: auto;
+        color: white;
+        opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+        .pve-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            text-align: center;
+        }
+        .pve-header .title-group {
+            width: 100%;
+            justify-content: center;
+        }
+        .pve-info-grid {
+            grid-template-columns: 1fr;
+        }
+        .pve-action-buttons {
+            flex-direction: column;
+        }
+        .pve-action-buttons .btn {
+            width: 100%;
+        }
+        .pve-utility-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .pve-chart-header {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .pve-toast-container {
+            left: 1rem;
+            right: 1rem;
+            top: 1rem;
+        }
     }
 </style>
 {% endblock %}
@@ -135,120 +323,101 @@
 {% block content %}
 <div class="container-fluid py-4">
 
-    <!-- Toast Notification -->
-    <div class="toast-container">
-        <div id="copyToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-check-circle-fill me-2"></i> Password copied to clipboard!
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
+    <!-- Toast -->
+    <div class="pve-toast-container">
+        <div id="copyToast" class="pve-toast" style="display:none;">
+            <i class="bi bi-check-circle-fill"></i>
+            <span id="toastMessage">Copied!</span>
+            <button type="button" class="btn-close btn-close-white" onclick="hideToast()"></button>
         </div>
     </div>
 
-    <!-- VPS Info -->
-    <div class="card shadow-lg mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center bg-gradient-primary text-white py-3">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-hdd-network me-3 fs-3"></i>
+    <!-- VPS Info Card -->
+    <div class="pve-card">
+        <div class="pve-header">
+            <div class="title-group">
+                <i class="bi bi-hdd-network"></i>
                 <div>
-                    <h4 class="mb-0">VPS {{ vps.vps_id }}</h4>
-                    <small class="opacity-75">Created: {{ vps.created_at }}</small>
+                    <h4>VPS {{ vps.vps_id }}</h4>
+                    <small>Created: {{ vps.created_at }}</small>
                 </div>
             </div>
-            <div class="d-flex align-items-center">
-                <span class="status-badge bg-{{ 'success' if container_status == 'running' else 'danger' if container_status == 'stopped' else 'warning' }} me-3">
-                    <i class="bi bi-{{ 'play-circle' if container_status == 'running' else 'stop-circle' if container_status == 'stopped' else 'exclamation-circle' }} me-1"></i>
+            <div class="d-flex align-items-center gap-3">
+                <span class="status-badge {{ 'success' if container_status == 'running' else 'danger' if container_status == 'stopped' else 'warning' }}">
+                    <i class="bi bi-{{ 'play-circle' if container_status == 'running' else 'stop-circle' if container_status == 'stopped' else 'exclamation-circle' }}"></i>
                     {{ container_status | capitalize }}
                 </span>
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="vpsActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots-vertical"></i>
-                    </button>
-                </div>
             </div>
         </div>
-        
-        <div class="card-body p-4">
-            <div class="info-grid">
-                <div class="info-item">
+
+        <div class="pve-body">
+            <div class="pve-info-grid">
+                <div class="pve-info-item">
                     <dt>Server IP</dt>
                     <dd><code>{{ server_ip }}</code></dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>SSH Port</dt>
                     <dd><code>{{ vps.port }}</code></dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Username</dt>
                     <dd><span class="badge bg-dark">root</span></dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Password</dt>
                     <dd>
                         <div class="d-flex align-items-center">
-                            <code id="rootPassword" class="me-2">{{ vps.root_password }}</code>
-                            <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyPassword()" title="Copy password">
+                            <code id="rootPassword">{{ vps.root_password }}</code>
+                            <button class="copy-btn" onclick="copyPassword()" title="Copy">
                                 <i class="bi bi-clipboard"></i>
                             </button>
                         </div>
                     </dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Memory</dt>
                     <dd>{{ vps.memory }} GB</dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>CPU</dt>
                     <dd>{{ vps.cpu }} cores</dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Disk</dt>
                     <dd>{{ vps.disk }} GB</dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>OS Image</dt>
                     <dd>{{ vps.os_image }}</dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Expires At</dt>
                     <dd>
                         {% if vps.expires_at %}
-                            {% if vps.is_expired %}
-                                <span class="badge bg-danger ms-1">Expired</span>
-                            {% else %}
-                                <span class="badge bg-warning ms-1">Active</span>
-                            {% endif %}
+                            {{ vps.expires_at }}
+                            <span class="badge ms-1 {{ 'bg-danger' if vps.is_expired else 'bg-success' }}">
+                                {{ 'Expired' if vps.is_expired else 'Active' }}
+                            </span>
                         {% else %}
                             Never
                         {% endif %}
                     </dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Tmate Session</dt>
                     <dd>
                         {% if vps.tmate_session %}
                             <code>{{ vps.tmate_session }}</code>
-                            <button class="btn btn-sm btn-outline-primary copy-btn ms-1" onclick="copyToClipboard('{{ vps.tmate_session }}')" title="Copy tmate session">
+                            <button class="copy-btn ms-1" onclick="copyToClipboard('{{ vps.tmate_session }}')" title="Copy">
                                 <i class="bi bi-clipboard"></i>
                             </button>
                         {% else %}
-                            <span class="text-muted">Not available</span>
+                            <em class="text-muted">Not available</em>
                         {% endif %}
                     </dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Additional Ports</dt>
                     <dd>
                         {% if vps.additional_ports %}
@@ -256,17 +425,15 @@
                                 <span class="badge bg-info me-1">{{ port.strip() }}</span>
                             {% endfor %}
                         {% else %}
-                            <span class="text-muted">None</span>
+                            <em class="text-muted">None</em>
                         {% endif %}
                     </dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Bandwidth Limit</dt>
                     <dd>{{ vps.bandwidth_limit }} MB</dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Tags</dt>
                     <dd>
                         {% if vps.tags %}
@@ -274,12 +441,11 @@
                                 <span class="badge bg-light text-dark me-1">{{ tag.strip() }}</span>
                             {% endfor %}
                         {% else %}
-                            <span class="text-muted">None</span>
+                            <em class="text-muted">None</em>
                         {% endif %}
                     </dd>
                 </div>
-                
-                <div class="info-item">
+                <div class="pve-info-item">
                     <dt>Groups</dt>
                     <dd>
                         {% if groups %}
@@ -287,84 +453,88 @@
                                 <span class="badge bg-secondary me-1">{{ group.name }}</span>
                             {% endfor %}
                         {% else %}
-                            <span class="text-muted">None</span>
+                            <em class="text-muted">None</em>
                         {% endif %}
                     </dd>
                 </div>
             </div>
-        </div>
-        
-<div class="card-footer p-3">
-    <div class="action-buttons mb-3">
-        <a href="/vps/{{ vps.vps_id }}/start" class="btn btn-success" id="startBtn">
-            <i class="bi bi-play-circle"></i> Start
-        </a>
-        <a href="/vps/{{ vps.vps_id }}/stop" class="btn btn-warning" id="stopBtn">
-            <i class="bi bi-stop-circle"></i> Stop
-        </a>
-        <a href="/vps/{{ vps.vps_id }}/restart" class="btn btn-info text-white" id="restartBtn">
-            <i class="bi bi-arrow-repeat"></i> Restart
-        </a>
-        <a href="/vps/{{ vps.vps_id }}/console" class="btn btn-dark">
-            <i class="bi bi-terminal"></i> Console
-        </a>
-        <form action="/vps/{{ vps.vps_id }}/change_password" method="POST" style="display: inline;">
-            <button type="submit" class="btn btn-primary" id="changePasswordBtn">
-                <i class="bi bi-key"></i> Change Password
-            </button>
-        </form>
-    </div>
-</div>
-            
-            <div class="utility-buttons">
-                <a href="/vps/{{ vps.vps_id }}/firewall" class="btn btn-outline-primary">
-                    <i class="bi bi-shield-check"></i> Firewall
+
+            <!-- Action Buttons -->
+            <div class="pve-action-buttons">
+                <a href="/vps/{{ vps.vps_id }}/start" class="btn btn-success" id="startBtn">
+                    <i class="bi bi-play-circle"></i> Start
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/snapshots" class="btn btn-outline-primary">
-                    <i class="bi bi-camera"></i> Snapshots
+                <a href="/vps/{{ vps.vps_id }}/stop" class="btn btn-warning" id="stopBtn">
+                    <i class="bi bi-stop-circle"></i> Stop
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/file_manager" class="btn btn-outline-primary">
-                    <i class="bi bi-folder"></i> File Manager
+                <a href="/vps/{{ vps.vps_id }}/restart" class="btn btn-info text-white" id="restartBtn">
+                    <i class="bi bi-arrow-repeat"></i> Restart
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/processes" class="btn btn-outline-primary">
-                    <i class="bi bi-diagram-3"></i> Processes
+                <a href="/vps/{{ vps.vps_id }}/console" class="btn btn-dark">
+                    <i class="bi bi-terminal"></i> Console
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/services" class="btn btn-outline-primary">
-                    <i class="bi bi-gear"></i> Services
+                <form action="/vps/{{ vps.vps_id }}/change_password" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-key"></i> Change Password
+                    </button>
+                </form>
+            </div>
+
+            <!-- Utility Grid -->
+            <div class="pve-utility-grid">
+                <a href="/vps/{{ vps.vps_id }}/firewall" class="btn">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Firewall</span>
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/packages" class="btn btn-outline-primary">
-                    <i class="bi bi-box"></i> Packages
+                <a href="/vps/{{ vps.vps_id }}/snapshots" class="btn">
+                    <i class="bi bi-camera"></i>
+                    <span>Snapshots</span>
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/vps_users" class="btn btn-outline-primary">
-                    <i class="bi bi-people"></i> Users
+                <a href="/vps/{{ vps.vps_id }}/file_manager" class="btn">
+                    <i class="bi bi-folder"></i>
+                    <span>File Manager</span>
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/cron" class="btn btn-outline-primary">
-                    <i class="bi bi-clock"></i> Cron Jobs
+                <a href="/vps/{{ vps.vps_id }}/processes" class="btn">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Processes</span>
                 </a>
-                <a href="/vps/{{ vps.vps_id }}/view_logs" class="btn btn-outline-primary">
-                    <i class="bi bi-journal-text"></i> View Logs
+                <a href="/vps/{{ vps.vps_id }}/services" class="btn">
+                    <i class="bi bi-gear"></i>
+                    <span>Services</span>
+                </a>
+                <a href="/vps/{{ vps.vps_id }}/packages" class="btn">
+                    <i class="bi bi-box"></i>
+                    <span>Packages</span>
+                </a>
+                <a href="/vps/{{ vps.vps_id }}/vps_users" class="btn">
+                    <i class="bi bi-people"></i>
+                    <span>Users</span>
+                </a>
+                <a href="/vps/{{ vps.vps_id }}/cron" class="btn">
+                    <i class="bi bi-clock"></i>
+                    <span>Cron Jobs</span>
+                </a>
+                <a href="/vps/{{ vps.vps_id }}/view_logs" class="btn">
+                    <i class="bi bi-journal-text"></i>
+                    <span>View Logs</span>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Resource History -->
-    <div class="card shadow-lg mb-4">
-        <div class="card-header bg-gradient-secondary text-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-activity me-2"></i> Resource Usage History</h5>
-                <div>
-                    <select id="timeRange" class="form-select form-select-sm" onchange="updateChart()">
-                        <option value="1h">Last 1 hour</option>
-                        <option value="6h">Last 6 hours</option>
-                        <option value="12h">Last 12 hours</option>
-                        <option value="24h" selected>Last 24 hours</option>
-                        <option value="7d">Last 7 days</option>
-                    </select>
-                </div>
-            </div>
+    <!-- Resource Chart Card -->
+    <div class="pve-card">
+        <div class="pve-chart-header">
+            <h5><i class="bi bi-activity"></i> Resource Usage History</h5>
+            <select id="timeRange" class="form-select form-select-sm" onchange="updateChart()">
+                <option value="1h">Last 1 hour</option>
+                <option value="6h">Last 6 hours</option>
+                <option value="12h">Last 12 hours</option>
+                <option value="24h" selected>Last 24 hours</option>
+                <option value="7d">Last 7 days</option>
+            </select>
         </div>
-        <div class="card-body p-4">
+        <div class="pve-chart-body">
             <div class="chart-container">
                 <canvas id="resourceChart"></canvas>
             </div>
@@ -373,244 +543,111 @@
 </div>
 
 <script>
-    // Copy password function
-    function copyPassword() {
-        const pwd = document.getElementById("rootPassword").textContent;
-        copyToClipboard(pwd);
+    // Toast
+    function showToast(message) {
+        const toast = document.getElementById('copyToast');
+        document.getElementById('toastMessage').textContent = message;
+        toast.style.display = 'flex';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
-    
-    // Generic copy to clipboard function
+    function hideToast() {
+        document.getElementById('copyToast').style.display = 'none';
+    }
+
+    // Copy
+    function copyPassword() {
+        copyToClipboard(document.getElementById("rootPassword").textContent);
+    }
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
             showToast('Copied to clipboard!');
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-            // Fallback for older browsers
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showToast('Copied to clipboard!');
-            } catch (err) {
-                console.error('Fallback copy failed: ', err);
-                alert('Failed to copy to clipboard. Please copy manually.');
-            }
-            document.body.removeChild(textArea);
+        }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Copied to clipboard!');
         });
     }
-    
-    // Show toast notification
-    function showToast(message) {
-        const toastEl = document.getElementById('copyToast');
-        const toastBody = toastEl.querySelector('.toast-body');
-        toastBody.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i> ${message}`;
-        
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-    }
-    
-    // Confirm deletion
-    function confirmDelete() {
-        return confirm('Are you sure you want to delete this VPS? This action cannot be undone.');
-    }
-    
-    // Resource Chart
+
+    // Chart
     let resourceChart;
     const ctx = document.getElementById('resourceChart').getContext('2d');
     const history = {{ history | tojson | safe }};
-    
-    // Format timestamps for display
-    function formatTimestamp(timestamp, range) {
-        const date = new Date(timestamp);
-        if (range === '1h' || range === '6h') {
-            return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        } else if (range === '12h' || range === '24h') {
-            return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        } else {
-            return date.toLocaleDateString([], {month: 'short', day: 'numeric'});
-        }
+
+    function formatTimestamp(ts, range) {
+        const d = new Date(ts);
+        if (['1h','6h'].includes(range)) return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        if (['12h','24h'].includes(range)) return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        return d.toLocaleDateString([], {month:'short', day:'numeric'});
     }
-    
-    // Filter data based on time range
-    function filterDataByRange(data, range) {
-        const now = new Date();
-        let cutoffTime;
-        
-        switch(range) {
-            case '1h': cutoffTime = new Date(now - 60*60*1000); break;
-            case '6h': cutoffTime = new Date(now - 6*60*60*1000); break;
-            case '12h': cutoffTime = new Date(now - 12*60*60*1000); break;
-            case '24h': cutoffTime = new Date(now - 24*60*60*1000); break;
-            case '7d': cutoffTime = new Date(now - 7*24*60*60*1000); break;
-            default: cutoffTime = new Date(now - 24*60*60*1000);
-        }
-        
-        return data.filter(item => new Date(item.timestamp) >= cutoffTime);
+
+    function filterData(data, range) {
+        const now = Date.now();
+        const ms = { '1h': 36e5, '6h': 21.6e6, '12h': 43.2e6, '24h': 86.4e6, '7d': 604.8e6 }[range] || 86.4e6;
+        return data.filter(d => Date.parse(d.timestamp) >= now - ms);
     }
-    
-    // Update chart based on selected time range
+
     function updateChart() {
         const range = document.getElementById('timeRange').value;
-        const filteredHistory = filterDataByRange(history, range);
-        const labels = filteredHistory.map(h => formatTimestamp(h.timestamp, range));
-        
+        const data = filterData(history, range);
+        const labels = data.map(d => formatTimestamp(d.timestamp, range));
+
         resourceChart.data.labels = labels;
-        resourceChart.data.datasets[0].data = filteredHistory.map(h => h.cpu_percent);
-        resourceChart.data.datasets[1].data = filteredHistory.map(h => h.memory_percent);
-        resourceChart.data.datasets[2].data = filteredHistory.map(h => h.disk_usage);
-        
+        resourceChart.data.datasets[0].data = data.map(d => d.cpu_percent);
+        resourceChart.data.datasets[1].data = data.map(d => d.memory_percent);
+        resourceChart.data.datasets[2].data = data.map(d => d.disk_usage);
         resourceChart.update();
     }
-    
-    // Initialize chart
+
     function initChart() {
         const range = document.getElementById('timeRange').value;
-        const filteredHistory = filterDataByRange(history, range);
-        const labels = filteredHistory.map(h => formatTimestamp(h.timestamp, range));
-        
-        const data = {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'CPU Usage (%)',
-                    data: filteredHistory.map(h => h.cpu_percent),
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
-                },
-                {
-                    label: 'Memory Usage (%)',
-                    data: filteredHistory.map(h => h.memory_percent),
-                    borderColor: '#f44336',
-                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
-                },
-                {
-                    label: 'Disk Usage (%)',
-                    data: filteredHistory.map(h => h.disk_usage),
-                    borderColor: '#2196f3',
-                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
-                }
-            ]
-        };
-        
+        const data = filterData(history, range);
+        const labels = data.map(d => formatTimestamp(d.timestamp, range));
+
         resourceChart = new Chart(ctx, {
             type: 'line',
-            data: data,
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'CPU %', data: data.map(d => d.cpu_percent), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3, fill: true },
+                    { label: 'Memory %', data: data.map(d => d.memory_percent), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.3, fill: true },
+                    { label: 'Disk %', data: data.map(d => d.disk_usage), borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,0.1)', tension: 0.3, fill: true }
+                ]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                plugins: {
-                    legend: { 
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        padding: 10,
-                        cornerRadius: 4
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: { 
-                            callback: value => value + "%",
-                            stepSize: 20
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
             }
         });
     }
-    
-    // Update quick stats
-    function updateQuickStats() {
-        // In a real application, you would fetch this data from the server
-        // For now, we'll simulate with random data
-        if (history && history.length > 0) {
-            const latest = history[history.length - 1];
-            
-            // Simulate uptime (this would normally come from the server)
-            const uptimeDays = Math.floor(Math.random() * 30);
-            const uptimeHours = Math.floor(Math.random() * 24);
-            document.getElementById('uptimeStat').textContent = `${uptimeDays}d ${uptimeHours}h`;
-            
-            // Simulate bandwidth usage
-            const bandwidthUsed = Math.floor(Math.random() * {{ vps.bandwidth_limit }});
-            document.getElementById('bandwidthStat').textContent = `${bandwidthUsed} MB / {{ vps.bandwidth_limit }} MB`;
-            
-            // Simulate active connections
-            const connections = Math.floor(Math.random() * 50);
-            document.getElementById('connectionsStat').textContent = connections;
-        }
-    }
-    
-    // Add loading states to action buttons
-    document.addEventListener('DOMContentLoaded', function() {
-        const actionButtons = document.querySelectorAll('#startBtn, #stopBtn, #restartBtn');
-        
-        actionButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                // If the VPS is already in the requested state, prevent action
+
+    // Button loading
+    document.addEventListener('DOMContentLoaded', () => {
+        ['startBtn', 'stopBtn', 'restartBtn'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener('click', function(e) {
                 const action = this.getAttribute('href').split('/').pop();
-                const currentStatus = '{{ container_status }}';
-                
-                if ((action === 'start' && currentStatus === 'running') ||
-                    (action === 'stop' && currentStatus === 'stopped') ||
-                    (action === 'restart' && currentStatus === 'stopped')) {
+                const status = '{{ container_status }}';
+                if ((action === 'start' && status === 'running') ||
+                    (action === 'stop' && status === 'stopped') ||
+                    (action === 'restart' && status === 'stopped')) {
                     e.preventDefault();
-                    showToast(`VPS is already ${currentStatus}.`);
+                    showToast(`VPS is already ${status}.`);
                     return;
                 }
-                
-                // Show loading state
-                this.classList.add('loading');
-                const originalText = this.innerHTML;
                 this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
-                
-                // Revert after 3 seconds if the page doesn't change
-                setTimeout(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = originalText;
-                }, 3000);
+                setTimeout(() => { this.innerHTML = this.dataset.original || this.innerHTML; }, 3000);
             });
+            btn.dataset.original = btn.innerHTML;
         });
-        
-        // Initialize chart and stats
+
         initChart();
-        updateQuickStats();
-        
-        // Auto-refresh stats every 30 seconds
-        setInterval(updateQuickStats, 3000);
     });
 </script>
 {% endblock %}
